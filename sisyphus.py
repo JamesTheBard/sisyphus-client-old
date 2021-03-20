@@ -71,11 +71,11 @@ def process_queue():
         if job := get_job():
             job_start_time = datetime.now()
             been_waiting = False
-            job_title = job.job_title
-            job_id = job.job_id
+            job_title = job.pop('job_title')
+            job_id = job.pop('job_id')
             update_status_message('in_progress', job_title, job_id)
             logging.info(f">> ACCEPTED JOB: '{job_title}': '{job_id}'")
-            for task, data in job.job.items():
+            for task, data in job.items():
                 task_start_time = datetime.now()
                 module_path = f'modules.{task}'
                 try:
