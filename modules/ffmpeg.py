@@ -2,6 +2,7 @@ import re
 import shlex
 import subprocess
 import time
+import box
 from pathlib import Path
 from pymongo import MongoClient
 
@@ -72,10 +73,13 @@ class Ffmpeg(BaseModule):
 
     def build_source_outputs(self):
         for output in self.data.output_map:
-            encode_options = self.mongo.get_database(Config.MONGO_DB) \
-                .get_collection(Config.MONGO_COLLECTION_PROFILES) \
-                .find({'name': output.profile})
-            encode_options = list(encode_options)[0]
+            try:
+                encode_options = self.mongo.get_database(Config.MONGO_DB) \
+                    .get_collection(Config.MONGO_COLLECTION_PROFILES) \
+                    .find({'name': output.profile})
+                encode_options = list(encode_options)[0]
+            except box.exceptions.BoxKeyError:
+                encode_options = {"codec": "copy"}
             temp = SourceOutput(
                 stream_type=output.stream_type,
                 stream=output.stream,
