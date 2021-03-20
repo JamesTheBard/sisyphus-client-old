@@ -77,12 +77,12 @@ class Ffmpeg(BaseModule):
                 encode_options = self.mongo.get_database(Config.MONGO_DB) \
                     .get_collection(Config.MONGO_COLLECTION_PROFILES) \
                     .find({'name': output.profile})
-                encode_options = list(encode_options)[0]
+                encode_options = list(encode_options)[0]['settings']
             except box.exceptions.BoxKeyError:
                 encode_options = {"codec": "copy"}
             temp = SourceOutput(
                 stream_type=output.stream_type,
                 stream=output.stream,
-                options=encode_options['settings']
+                options=encode_options
             )
             self.encoder.mapped_outputs.append(temp)
