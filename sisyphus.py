@@ -69,6 +69,7 @@ def process_queue():
     while True:
         time.sleep(1)
         if job := get_job():
+            job_failed = False
             job_start_time = datetime.now()
             been_waiting = False
             job_title = job.pop('job_title')
@@ -83,6 +84,7 @@ def process_queue():
                 except (AttributeError, ModuleNotFoundError):
                     logging.critical(f">> TASK FAILED: [{task}] Could not load module, abandoning task.")
                     logging.critical(f">> JOB FAILED: '{job_title}': '{job_id}'")
+                    job_failed = True
                     break
                 logging.info(f"Loaded module: '{task}'")
                 task_instance = module(data=data, job_title=job_title)
@@ -92,13 +94,15 @@ def process_queue():
                 except (JobValidationError, JobRunFailureError, JobConfigurationError) as e:
                     logging.critical(f">> TASK FAILED: [{e.module}] {e.message}")
                     logging.critical(f">> JOB FAILED: '{job_title}': '{job_id}'")
+                    job_failed = True
                     break
                 logging.info(f"Completed task: '{task}'.")
                 task_run_time = datetime.now() - task_start_time
                 logging.debug(f"Task completion time: '{task_run_time}'")
-            logging.info(f">> COMPLETED JOB: '{job_title}': '{job_id}'")
-            job_run_time = datetime.now() - job_start_time
-            logging.info(f">> DURATION: '{job_run_time}'")
+            if not job_failed:
+                logging.info(f">> COMPLETED JOB: '{job_title}': '{job_id}'")
+                job_run_time = datetime.now() - job_start_time
+                logging.info(f">> DURATION: '{job_run_time}'")
         else:
             if not been_waiting:
                 logging.info(f"Waiting for job in queue '{Config.REDIS_QUEUE_NAME}'")
