@@ -1,0 +1,32 @@
+{
+  "ffmpeg": {
+    "sources": [
+      "/mnt/phoenix/Server/videos/[Rias] Log Horizon - 08 [1080p].mkv"
+    ],
+    "source_map": [
+      {
+        "source": 0,
+        "stream_type": "v",
+        "stream": 0
+      },
+      {
+        "source": 0,
+        "stream_type": "a",
+        "stream": 0
+      }
+    ],
+    "output_map": [
+      {
+        "stream_type": "v",
+        "stream": 0,
+        "profile": "dark-and-stormy"
+      },
+      {
+        "stream_type": "a",
+        "stream": 0,
+        "profile": "opus-128k"
+      }
+    ],
+    "output_file": "/mnt/phoenix/Server/temp/tmp3p3nqmgi.mkv"
+  }
+}
