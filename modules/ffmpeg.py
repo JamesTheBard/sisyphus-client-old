@@ -32,7 +32,7 @@ class Ffmpeg(BaseModule):
         if not self.encoder.ffmpeg_path:
             raise ex.JobValidationError(message=f"Could not find the Ffmpeg binary.", module='ffmpeg')
 
-        for file in self.encoder.inputs:
+        for file in [Path(i) for i in self.encoder.inputs]:
             if not file.is_file() or not file.exists():
                 raise ex.JobValidationError(message=f"Input file '{file.name}' does not exist.", module='ffmpeg')
 
