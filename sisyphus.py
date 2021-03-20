@@ -87,11 +87,11 @@ def process_queue():
                     job_failed = True
                     break
                 logging.info(f"Successfully loaded module: '{task}'")
-                logging.info(f"Validating data: '{data}'")
+                logging.debug(f"Validating data: '{data}'")
                 task_instance = module(data=data, job_title=job_title)
                 try:
                     task_instance.validate()
-                    logging.info(f"Running task: {data}")
+                    logging.info(f"Running task: '{task}'")
                     task_instance.run()
                 except (JobValidationError, JobRunFailureError, JobConfigurationError) as e:
                     logging.critical(f">> TASK FAILED: [{e.module}] {e.message}")
