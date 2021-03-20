@@ -74,37 +74,40 @@ def process_queue():
             been_waiting = False
             job_title = job.pop('job_title')
             job_id = job.pop('job_id')
+            job_tasks = list(job.keys())
+            job_tasks_str = ', '.join(job_tasks)
             update_status_message('in_progress', job_title, job_id)
-            logging.info(f">> ACCEPTED JOB: '{job_title}': '{job_id}'")
+            logging.info(f"ACCEPTED JOB: '{job_title}': '{job_id}'")
+            logging.info(f"  [{job_title}] Tasks in job: {job_tasks_str}")
             for task, data in job.items():
                 task_start_time = datetime.now()
                 module_path = f'modules.{task}'
                 try:
                     module = getattr(importlib.import_module(module_path), task.capitalize())
                 except (AttributeError, ModuleNotFoundError):
-                    logging.critical(f">> TASK FAILED: [{task}] Could not load module, abandoning task.")
-                    logging.critical(f">> JOB FAILED: '{job_title}': '{job_id}'")
+                    logging.critical(f"  [{job_title}] TASK FAILED: [{task}] Could not load module, abandoning task.")
+                    logging.critical(f"JOB FAILED: '{job_title}': '{job_id}'")
                     job_failed = True
                     break
-                logging.info(f"Successfully loaded module: '{task}'")
-                logging.debug(f"Validating data: '{data}'")
+                logging.info( f"  [{job_title}] Successfully loaded module: '{task}'")
+                logging.debug(f"  [{job_title}] Validating data: '{data}'")
                 task_instance = module(data=data, job_title=job_title)
                 try:
                     task_instance.validate()
-                    logging.info(f"Running task: '{task}'")
+                    logging.info(f"  [{job_title}] Running task from module...")
                     task_instance.run()
                 except (JobValidationError, JobRunFailureError, JobConfigurationError) as e:
-                    logging.critical(f">> TASK FAILED: [{e.module}] {e.message}")
-                    logging.critical(f">> JOB FAILED: '{job_title}': '{job_id}'")
+                    logging.critical(f"  [{job_title}] TASK FAILED: [{e.module}] {e.message}")
+                    logging.critical(f"JOB FAILED: '{job_title}': '{job_id}'")
                     job_failed = True
                     break
-                logging.info(f"Completed task: '{task}'.")
+                logging.info(f"  [{job_title}] Completed task: '{task}'.")
                 task_run_time = datetime.now() - task_start_time
-                logging.debug(f"Task completion time: '{task_run_time}'")
+                logging.info(f"  [{job_title}] Task completion time: '{task_run_time}'")
             if not job_failed:
-                logging.info(f">> COMPLETED JOB: '{job_title}': '{job_id}'")
+                logging.info(f"COMPLETED JOB: '{job_title}': '{job_id}'")
                 job_run_time = datetime.now() - job_start_time
-                logging.info(f">> DURATION: '{job_run_time}'")
+                logging.info(f"DURATION: '{job_run_time}'")
         else:
             if not been_waiting:
                 logging.info(f"Waiting for job in queue '{Config.REDIS_QUEUE_NAME}'")
