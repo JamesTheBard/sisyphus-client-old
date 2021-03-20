@@ -18,6 +18,7 @@ class Ffmpeg(BaseModule):
         super().__init__(data, job_title)
         self.encoder = Ff()
         self.mongo = MongoClient(Config.MONGO_URI)
+        self.process_files()
 
     def process_files(self):
         self.encoder.output = self.data.output_file

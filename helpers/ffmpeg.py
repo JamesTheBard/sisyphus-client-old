@@ -103,7 +103,7 @@ class Ffmpeg:
 
     inputs: List[Path]
     mapped_sources: List[Source]
-    output_temp: Union[str, Path]
+    __output: Union[str, Path]
     source_outputs: List[SourceOutput]
     settings: FfmpegMiscSettings
 
@@ -165,11 +165,11 @@ class Ffmpeg:
 
     @property
     def output(self) -> Path:
-        return self.output_temp
+        return self.__output
 
     @output.setter
     def output(self, path: Union[str, Path]) -> None:
-        self.output_temp = Path(path)
+        self.__output = Path(path)
 
 
 class FfmpegInfo:
