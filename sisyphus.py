@@ -7,7 +7,6 @@ import sys
 import time
 from box import Box
 from datetime import datetime
-from rich.logging import RichHandler
 
 import modules.shared
 from config import Config
@@ -35,12 +34,11 @@ def update_status_message(status: str, job_title: str = None, job_id: str = None
 
 
 def configure_logging():
-    message_format = "%(message)s"
+    message_format = "[%(asctime)s] %(levelname)-8s %(message)s"
     # noinspection PyArgumentList
     logging.basicConfig(
         level="INFO",
         format=message_format, datefmt="[%x %X]",
-        handlers=[RichHandler(rich_tracebacks=True, show_path=False)]
     )
 
 
@@ -77,7 +75,7 @@ def process_queue():
             job_tasks = list(job.keys())
             job_tasks_str = ' -> '.join(job_tasks)
             update_status_message('in_progress', job_title, job_id)
-            logging.info(f"ACCEPTED JOB: '{job_title}': '{job_id}'")
+            logging.info(f"ACCEPTED JOB: {job_title}: {job_id}")
             logging.info(f" + [{job_title}] Tasks in job: {job_tasks_str}")
             for task, data in job.items():
                 task_start_time = datetime.now()
@@ -85,11 +83,11 @@ def process_queue():
                 try:
                     module = getattr(importlib.import_module(module_path), task.capitalize())
                 except (AttributeError, ModuleNotFoundError):
-                    logging.critical(f"!!! [{job_title}:{task}] TASK FAILED: Could not load module, abandoning task.")
-                    logging.critical(f"JOB FAILED: '{job_title}': '{job_id}'")
+                    logging.critical(f" ! [{job_title}:{task}] TASK FAILED: Could not load module, abandoning task.")
+                    logging.critical(f"JOB FAILED: {job_title}: {job_id}")
                     job_failed = True
                     break
-                logging.info( f" + [{job_title}] Successfully loaded module: '{task}'")
+                logging.info( f" + [{job_title}] Successfully loaded module: {task}")
                 logging.debug(f" + [{job_title}:{task}] Validating data: '{data}'")
                 task_instance = module(data=data, job_title=job_title)
                 try:
@@ -97,19 +95,19 @@ def process_queue():
                     logging.info(f" + [{job_title}:{task}] Running task from module...")
                     task_instance.run()
                 except (JobValidationError, JobRunFailureError, JobConfigurationError) as e:
-                    logging.critical(f"!!! [{job_title}:{task}] {type(e).__name__}: {e.message}")
-                    logging.critical(f"JOB FAILED: '{job_title}': '{job_id}'")
+                    logging.critical(f" ! [{job_title}:{task}] {type(e).__name__}: {e.message}")
+                    logging.critical(f"JOB FAILED: {job_title}: {job_id}")
                     job_failed = True
                     break
                 task_run_time = datetime.now() - task_start_time
                 logging.info(f" + [{job_title}:{task}] Completed task in '{task_run_time}'.")
             if not job_failed:
-                logging.info(f"COMPLETED JOB: '{job_title}': '{job_id}'")
+                logging.info(f"COMPLETED JOB: {job_title}: {job_id}")
                 job_run_time = datetime.now() - job_start_time
-                logging.info(f"DURATION: '{job_run_time}'")
+                logging.info(f"DURATION: {job_run_time}")
         else:
             if not been_waiting:
-                logging.info(f"Waiting for job in queue '{Config.REDIS_QUEUE_NAME}'")
+                logging.info(f"Waiting for job in Redis queue '{Config.REDIS_QUEUE_NAME}'")
                 been_waiting = True
             update_status_message('idle')
 
