@@ -34,7 +34,7 @@ def update_status_message(status: str, job_title: str = None, job_id: str = None
 
 
 def configure_logging():
-    message_format = "[%(asctime)s] %(levelname)-8s %(message)s"
+    message_format = "%(asctime)s %(levelname)-8s %(message)s"
     # noinspection PyArgumentList
     logging.basicConfig(
         level="INFO",
@@ -46,8 +46,8 @@ def startup_message():
     logging.info(f"Starting worker version {Config.VERSION}")
     logging.debug(f"REDIS: Server 'redis://{Config.REDIS_HOST}:{Config.REDIS_PORT}/{Config.REDIS_DB}'")
     logging.debug(f"REDIS: Monitoring queue '{Config.REDIS_QUEUE_NAME}'")
-    logging.info(f"Hostname:  '{Config.HOSTNAME}'")
-    logging.info(f"Worker ID: '{Config.HOST_UUID}'")
+    logging.info(f"Hostname:  {Config.HOSTNAME}")
+    logging.info(f"Worker ID: {Config.HOST_UUID}")
 
 
 def get_job() -> Box:
