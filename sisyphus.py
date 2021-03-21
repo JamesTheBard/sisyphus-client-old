@@ -88,19 +88,19 @@ def process_queue():
                     job_failed = True
                     break
                 logging.info( f" + [{job_title}] Successfully loaded module: {task}")
-                logging.debug(f" + [{job_title}:{task}] Validating data: '{data}'")
+                logging.debug(f" + [{job_title} -> {task}] Validating data: '{data}'")
                 task_instance = module(data=data, job_title=job_title)
                 try:
                     task_instance.validate()
-                    logging.info(f" + [{job_title}:{task}] Running task from module...")
+                    logging.info(f" + [{job_title} -> {task}] Running task from module...")
                     task_instance.run()
                 except (JobValidationError, JobRunFailureError, JobConfigurationError) as e:
-                    logging.critical(f" ! [{job_title}:{task}] {type(e).__name__}: {e.message}")
+                    logging.critical(f" ! [{job_title} -> {task}] {type(e).__name__}: {e.message}")
                     logging.critical(f"JOB FAILED: {job_title}: {job_id}")
                     job_failed = True
                     break
                 task_run_time = datetime.now() - task_start_time
-                logging.info(f" + [{job_title}:{task}] Completed task in '{task_run_time}'.")
+                logging.info(f" + [{job_title} -> {task}] Completed task in '{task_run_time}'.")
             if not job_failed:
                 logging.info(f"COMPLETED JOB: {job_title}: {job_id}")
                 job_run_time = datetime.now() - job_start_time
