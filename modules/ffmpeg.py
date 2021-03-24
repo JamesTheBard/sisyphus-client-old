@@ -73,13 +73,21 @@ class Ffmpeg(BaseModule):
 
     def build_source_outputs(self):
         for output in self.data.output_map:
+            encode_options = dict()
+
             try:
-                encode_options = self.mongo.get_database(Config.MONGO_DB) \
+                encode_profile = self.mongo.get_database(Config.MONGO_DB) \
                     .get_collection(Config.MONGO_COLLECTION_PROFILES) \
                     .find({'name': output.profile})
-                encode_options = list(encode_options)[0]['settings']
+                encode_profile_options = list(encode_profile)[0]['settings']
+                encode_options.update(encode_profile_options)
             except box.exceptions.BoxKeyError:
-                encode_options = {"codec": "copy"}
+                pass
+            try:
+                encode_options.update(output.options)
+            except box.exceptions.BoxKeyError:
+                pass
+
             temp = SourceOutput(
                 stream_type=output.stream_type,
                 stream=output.stream,
