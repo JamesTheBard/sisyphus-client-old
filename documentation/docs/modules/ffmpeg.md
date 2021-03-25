@@ -8,11 +8,22 @@ The `ffmpeg` module data layout is based off the way `ffmpeg` lays out its comma
 
 It does require that the Ffmpeg binary is installed on the worker, and that it is in the system path.  If it's not, the job will _definitely_ fail.
 
-## Sources
+## Config Options
+
+The following options can be used to configure various aspects of the module via the `config.py` file.
+
+- `FFMPEG_BIN_PATH`: When defined, will set the path to the Ffmpeg binary
+- `FFMPEG_MONGO_DB`: The MongoDB database that holds the profiles
+- `FFMPEG_MONGO_COLLECTION`: The collection that holds the profiles
+- `FFMPEG_MONGO_URI`: Connection URI to pass to the Python MongoDB for the profiles
+
+## Data Format
+
+### Sources
 
 The `sources` are simply that: input sources.  They will be labelled in the order they appear in the `sources` section.
 
-## Source Maps
+### Source Maps
 
 In the `source_maps` section, the `source` is the index of the source file in the `sources` section, the `stream_type` is the type of stream we want to map (`v` for video, `a` for audio, and `s` to subtitles), and the `stream` is the stream number of type `stream_type` in the source file.  For example, the second audio stream in the first source file would be:
 
@@ -30,7 +41,7 @@ All sources and streams are zero-indexed, so the first one is `0`, the second on
 
 :::
 
-## Output Maps
+### Output Maps
 
 In the `output_maps` section, the sources are zero-indexed from the `source_maps` section.  The order of the source maps after they've been built are used here.  Also, the source maps are done via stream type meaning each are zero-indexed.
 
@@ -55,6 +66,8 @@ In the `output_maps` section, the sources are zero-indexed from the `source_maps
 }
 ```
 
+### Profiles
+
 For the profile, the format that needs to be in the MongoDB is as follows.  The `settings` section literally gets placed into the output map `options` settings, then overriden by what was defined originally in the `options` section.
 
 ```json title="MongoDB Profile Example"
@@ -74,7 +87,7 @@ For the profile, the format that needs to be in the MongoDB is as follows.  The 
 
 Profiles are loaded from MongoDB and contain a defined list of options and are pulled via its name.  Options can be defined outside of a profile, and if both are specified the `options` section overrides those contained in the profile.
 
-## Output File
+### Output File
 
 The `output_file` field is just where the final output file will be saved to.
 
@@ -125,3 +138,8 @@ The `output_file` field is just where the final output file will be saved to.
   "output_file": "/shared/output_file.mkv"
 }
 ```
+
+## Validation
+
+- Looks for the `ffmpeg` binary.
+- Verifies that all of the source paths exist on the worker filesystem and are actual files.

@@ -6,6 +6,7 @@ module.exports = {
       items: [
         'getting-started',
 	'modules/ffmpeg',
+	'modules/mkvmerge',
       ],
     },
   ],

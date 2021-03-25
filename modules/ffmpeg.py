@@ -1,3 +1,4 @@
+import os
 import re
 import shlex
 import subprocess
@@ -18,7 +19,8 @@ class Ffmpeg(BaseModule):
     def __init__(self, data: dict, job_title: str):
         super().__init__(data, job_title)
         self.encoder = Ff()
-        self.mongo = MongoClient(Config.MONGO_URI)
+        self.encoder.ffmpeg_path = os.getenv('FFMPEG_PATH', self.encoder.ffmpeg_path)
+        self.mongo = MongoClient(Config.FFMPEG_MONGO_URI)
         self.process_files()
 
     def process_files(self):
