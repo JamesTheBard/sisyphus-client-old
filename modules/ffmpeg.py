@@ -78,8 +78,8 @@ class Ffmpeg(BaseModule):
             encode_options = dict()
 
             try:
-                encode_profile = self.mongo.get_database(Config.MONGO_DB) \
-                    .get_collection(Config.MONGO_COLLECTION_PROFILES) \
+                encode_profile = self.mongo.get_database(Config.FFMPEG_MONGO_DB) \
+                    .get_collection(Config.FFMPEG_MONGO_COLLECTION) \
                     .find({'name': output.profile})
                 encode_profile_options = list(encode_profile)[0]['settings']
                 encode_options.update(encode_profile_options)
