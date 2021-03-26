@@ -6,6 +6,10 @@ title: Mkvmerge Module
 
 The `mkvmerge` module is very similar to the `ffmpeg` module in that the data passed to it is very similar to the way the Mkvmerge binary requires its options.  This module does not conver the insane number of options and combinations that the `mkvmerge` binary can do, but it does cover the basics.
 
+### Requirements
+
+`mkvmerge` must be installed on the worker node.  This is usually in the `mkvtoolnix` package on most Linux distros.
+
 ## Config Options
 
 The following configuration options can be set in the `config.py` file:

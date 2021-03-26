@@ -8,6 +8,10 @@ The `ffmpeg` module data layout is based off the way `ffmpeg` lays out its comma
 
 It does require that the Ffmpeg binary is installed on the worker, and that it is in the system path.  If it's not, the job will _definitely_ fail.
 
+### Requirements
+
+- `ffmpeg` installed on the worker node, and either be in the system path or the binary's path defined in the `FFMPEG_BIN_PATH` configuration variable.
+
 ## Config Options
 
 The following options can be used to configure various aspects of the module via the `config.py` file.

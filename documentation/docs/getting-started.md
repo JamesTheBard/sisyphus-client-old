@@ -33,13 +33,15 @@ The worker is fairly easy to customize, but the information structure below must
 
 :::
 
-```json title="Data Structure"
+```json title="Example Data Structure"
 {
   "job_title": "job_title_01",
   "job_id": "${uuid}",
-  "${module}": {
-    "module_setting": "value",
-    "module_value": "setting"
-  }
+  "ffmpeg": {
+    "module_settings": "look_at_module_doc_for_all_the_data"
+  },
+  "mkvmerge": {
+    "module_settings": "also_in_the_docs"
+  } 
 }
 ```
