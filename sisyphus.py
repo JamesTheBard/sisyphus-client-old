@@ -72,7 +72,7 @@ def process_queue():
             been_waiting = False
             job_title = job.job_title
             job_id = job.job_id
-            job_tasks = [i.keys()[0] for i in job.tasks]
+            job_tasks = [list(i.keys())[0] for i in job.tasks]
             job_tasks_str = ' -> '.join(job_tasks)
             update_status_message('in_progress', job_title, job_id)
             logging.info(f"ACCEPTED JOB: {job_title}: {job_id}")
