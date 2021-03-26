@@ -71,7 +71,7 @@ class Mkvmerge(BaseModule):
                 self.matroska.add_attachment(a)
 
     def validate(self):
-        if len(self.font_map) == 0:
+        if len(self.font_map) == 0 and Config.MKVMERGE_ENABLE_FONT_ATTACHMENTS:
             raise ex.JobValidationError(
                 message=f"There are no fonts in the font directory '{self.font_directory}'.",
                 module=self.module_name

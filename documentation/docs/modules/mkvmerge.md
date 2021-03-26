@@ -38,4 +38,80 @@ For the source and track relationship, the source is zero-indexed from the sourc
 }
 ```
 
-Test
+### Output File
+
+The output file is just the file that Mkvmerge will mux to.
+
+### Options
+
+These are global options like `no-global-tags` that apply to the entire mux.  Any flag that needs to be set needs to have the value of `null` if there isn't a value being passed.
+
+```json title="Options Section"
+{
+  "no-global-tags": null,
+  "no-track-tags": null,
+  "ui-language": "en_US"
+}
+```
+
+### Full Example
+
+```json title="Full Example
+{
+  "sources": [
+    "/mnt/server/cool_video_file_with_eng_audio.mkv",
+    "/mnt/server/cool_audio_file_jpn.ac3",
+    "/mnt/server/subtitles_full_eng.ass"
+  ],
+  "tracks": [
+    {
+      "source": 0,
+      "track": 0,
+      "options": {
+        "language": "und",
+        "default-track": "yes",
+        "title": "Awesome Newly Muxed Video"
+      }
+    },
+    {
+      "source": 1,
+      "track": 0,
+      "options": {
+        "language": "jpn",
+        "default-track": "yes"
+      }
+    },
+    {
+      "source": 0,
+      "track": 1,
+      "options": {
+        "language": "eng",
+        "default-track": "no"
+      }
+    },
+    {
+      "source": 2,
+      "track": 0,
+      "options": {
+        "language": "eng",
+        "default-track": "yes",
+        "track-title": "Full Subtitles"
+      }
+    }
+  ],
+  "output_file": "/mnt/server/awesome_newly_muxed_video.mkv",
+  "options": {
+    "no-global-tags": null,
+    "no-track-tags": null,
+    "title": "Awesome Newly Muxed Video"
+  }
+}
+```
+
+## Validation
+
+- Check to see if there is are fonts in the `MKVMERGE_FONT_DIRECTORY` when `MKVMERGE_ENABLE_FONT_ATTACHMENTS` is enabled.
+- Verify that sources are defined in the job data.
+- Verify that all sources exist.
+- Verify that tracks are defined in the job data.
+- Verify that the output file is defined in the job data.
