@@ -29,7 +29,7 @@ Each job is defined as a set of modules; this is because each task in a job is l
 
 :::note
 
-The worker is fairly easy to customize, but the information structure below must be followed.  Currently, the `job_title` and `job_id` elements are popped off the data structure, and any resulting keys are processed as job tasks.
+The worker is fairly easy to customize, but the information structure below must be followed.  The `job_title` and `job_id` are expected values that the worker expects.
 
 :::
 
@@ -37,11 +37,17 @@ The worker is fairly easy to customize, but the information structure below must
 {
   "job_title": "job_title_01",
   "job_id": "${uuid}",
-  "ffmpeg": {
-    "module_settings": "look_at_module_doc_for_all_the_data"
-  },
-  "mkvmerge": {
-    "module_settings": "also_in_the_docs"
-  } 
+  "tasks": [
+    {
+      "ffmpeg": {
+        "module_settings": "look_at_module_doc_for_all_the_data"
+      }
+    },
+    {
+      "mkvmerge": {
+        "module_settings": "also_in_the_docs"
+      }
+    }
+  ] 
 }
 ```
