@@ -40,16 +40,26 @@ For the source and track relationship, the source is zero-indexed from the sourc
 
 ```json title="Tracks Section"
 {
-  "tracks": {
-    "source": 1,
-    "track": 2,
-    "options": {
-      "track-name": "Cool English Track",
-      "language": "eng",
-      "default-track": "yes",
-      "original-track": "yes"
+  "tracks": [
+    {
+      "source": 0,
+      "track": 0,
+      "options": {
+        "track-name": "Interesting Title for Track",
+        "language": "und",
+        "default-track": "yes",
+      }
+    },
+    {
+      "source": 0,
+      "track": 1,
+      "options": {
+        "track-name": "English Audio",
+        "language": "eng",
+        "default-track": "yes"
+      }
     }
-  }
+  ]
 }
 ```
 
