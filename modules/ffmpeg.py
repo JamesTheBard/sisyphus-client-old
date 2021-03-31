@@ -22,6 +22,7 @@ class Ffmpeg(BaseModule):
         self.encoder.ffmpeg_path = os.getenv('FFMPEG_PATH', self.encoder.ffmpeg_path)
         self.mongo = MongoClient(Config.FFMPEG_MONGO_URI)
         self.process_files()
+        self.module_name = "ffmpeg"
 
     def process_files(self):
         self.encoder.output = self.data.output_file
@@ -85,6 +86,11 @@ class Ffmpeg(BaseModule):
                 encode_options.update(encode_profile_options)
             except box.exceptions.BoxKeyError:
                 pass
+            except IndexError:
+                raise ex.JobConfigurationError(
+                    message=f"The profile '{output.profile}' was not found, abandoning job.",
+                    module=self.module_name
+                )
             try:
                 encode_options.update(output.options)
             except box.exceptions.BoxKeyError:
