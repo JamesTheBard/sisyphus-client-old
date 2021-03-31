@@ -22,7 +22,6 @@ class Ffmpeg(BaseModule):
         self.encoder.ffmpeg_path = os.getenv('FFMPEG_PATH', self.encoder.ffmpeg_path)
         self.mongo = MongoClient(Config.FFMPEG_MONGO_URI)
         self.module_name = "ffmpeg"
-        self.process_files()
 
     def process_files(self):
         self.encoder.output = self.data.output_file
@@ -33,6 +32,7 @@ class Ffmpeg(BaseModule):
         self.build_source_outputs()
 
     def validate(self):
+        self.process_files()
         if not self.encoder.ffmpeg_path:
             raise ex.JobValidationError(message=f"Could not find the Ffmpeg binary.", module='ffmpeg')
 
