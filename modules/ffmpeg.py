@@ -87,7 +87,7 @@ class Ffmpeg(BaseModule):
             except box.exceptions.BoxKeyError:
                 pass
             except IndexError:
-                raise ex.JobConfigurationError(
+                raise ex.JobValidationError(
                     message=f"The profile '{output.profile}' was not found, abandoning job.",
                     module=self.module_name
                 )
