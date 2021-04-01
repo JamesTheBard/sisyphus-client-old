@@ -13,7 +13,10 @@ def set_heartbeat():
         db=Config.REDIS_DB
     )
     while True:
-        r.set(f'worker:{Config.HOST_UUID}', modules.shared.message, ex=10)
+        try:
+            r.set(f'worker:{Config.HOST_UUID}', modules.shared.message, ex=10)
+        except (redis.exceptions.ConnectionError, ConnectionRefusedError):
+            pass
         time.sleep(5)
 
 

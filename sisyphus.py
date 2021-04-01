@@ -56,9 +56,21 @@ def get_job() -> Box:
         port=Config.REDIS_PORT,
         db=Config.REDIS_DB,
     )
-    if job := r.rpop(Config.REDIS_QUEUE_NAME):
-        return Box(json.loads(job))
-    return Box()
+    try:
+        job = r.rpop(Config.REDIS_QUEUE_NAME)
+        if not modules.shared.is_connected_to_redis:
+            logging.info(f"Reconnected to Redis server: {Config.REDIS_HOST}:{Config.REDIS_PORT}")
+            modules.shared.is_connected_to_redis = True
+        if job:
+            return Box(json.loads(job))
+        else:
+            return Box()
+    except (redis.exceptions.ConnectionError, ConnectionRefusedError):
+        if modules.shared.is_connected_to_redis:
+            logging.warning(f"Unable to connect to Redis server: {Config.REDIS_HOST}:{Config.REDIS_PORT}")
+            modules.shared.is_connected_to_redis = False
+        time.sleep(10)
+        return Box()
 
 
 def process_queue():
