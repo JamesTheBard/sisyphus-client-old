@@ -12,9 +12,8 @@ class HandbrakeTrack:
     and the options associated with each.  For available options, look under the Audio Options and Subtitles Options
     in the help of HandBrakeCLI
     """
-
-    track: Union[int, str]
     options: Box
+    track: Union[int, str]
 
     def __init__(self, track: Union[int, str], options: Union[Box, dict] = None):
         """
@@ -33,15 +32,17 @@ class Handbrake:
     """
     The core Handbrake module. This will build a correct CLI set of arguments for the HandBrakeCLI binary.
     """
-
     __source: Path
     __output_file: Path
-    cli_path: Path
-    source_options: Box
-    destination_options: Box
-    video_options: Box
     audio_tracks: List[HandbrakeTrack]
+    cli_path: Path
+    destination_options: Box
+    filter_options: Box
+    general_options: Box
+    picture_options: Box
+    source_options: Box
     subtitle_tracks: List[HandbrakeTrack]
+    video_options: Box
 
     def __init__(self, cli_path: Union[Path, str] = None):
         """
@@ -52,14 +53,15 @@ class Handbrake:
             self.cli_path = Path(cli_path)
         else:
             self.cli_path = Path(shutil.which('HandBrakeCLI'))
-        self.video_options = Box()
-        self.source_options = Box()
+        self.audio_tracks = list()
         self.destination_options = Box()
         self.encoder_options = Box()
-        self.picture_options = Box()
         self.filters_options = Box()
+        self.general_options = Box()
+        self.picture_options = Box()
+        self.source_options = Box()
         self.subtitle_tracks = list()
-        self.audio_tracks = list()
+        self.video_options = Box()
 
     @property
     def source(self) -> Path:
@@ -112,6 +114,13 @@ class Handbrake:
             if v is not None and type(v) is not bool:
                 command.append(v)
         return [str(i) for i in command]
+
+    def generate_general_options(self) -> List[str]:
+        """
+        Generates the video options.
+        :return: List of video options for the CLI
+        """
+        return self.__generate_generic_options(self.general_options)
 
     def generate_video_options(self) -> List[str]:
         """
@@ -177,7 +186,7 @@ class Handbrake:
                     results[option].append(t.options[option])
                 except box.exceptions.BoxKeyError:
                     results[option].append(unset_value)
-        results = {k: ','.join(v) for k, v in results.items()}
+        results = {k: ','.join([str(i) for i in v]) for k, v in results.items()}
         return self.__generate_generic_options(Box(results))
 
     def generate_audio_options(self) -> List[str]:
@@ -201,13 +210,14 @@ class Handbrake:
         :return: Return the HandBrakeCLI command options
         """
         option_list = [
+            self.generate_general_options,
             self.generate_source_options,
-            self.generate_video_options,
-            self.generate_picture_options,
-            self.generate_audio_options,
-            self.generate_subtitle_options,
             self.generate_destination_options,
+            self.generate_video_options,
+            self.generate_audio_options,
+            self.generate_picture_options,
             self.generate_filters_options,
+            self.generate_subtitle_options,
         ]
         command = [str(self.cli_path)]
         [command.extend(i()) for i in option_list]
@@ -235,16 +245,17 @@ if __name__ == "__main__":
     h = Handbrake()
     h.source = "test 2.mkv"
     h.output_file = "output.mkv"
+    h.general_options.verbose = 3
+    h.source_options.chapters = "1-3"
+    h.destination_options.format = "av_mkv"
     h.video_options.encoder = "x265_10bit"
     h.video_options.q = 19
-    h.source_options.chapters = "1-3"
     h.audio_tracks.append(HandbrakeTrack(track=1, options={"aencoder": "opus", "downmix": "stereo", "ab": "128"}))
-    h.audio_tracks.append(HandbrakeTrack(track=2, options={"aencoder": "ac3"}))
-    h.subtitle_tracks.append(HandbrakeTrack(track=1))
-    h.subtitle_tracks.append(HandbrakeTrack(track=2))
-    h.filters_options.no_comb_detect = True
-    h.filters_options.no_deinterlace = True
+    h.audio_tracks.append(HandbrakeTrack(track=2, options={"aencoder": "ac3",  "drc": 1.5}))
     h.picture_options.w = 1920
     h.picture_options.h = 1080
-    h.destination_options.format = "av_mkv"
+    h.filters_options.no_comb_detect = True
+    h.filters_options.no_deinterlace = True
+    h.subtitle_tracks.append(HandbrakeTrack(track=1))
+    h.subtitle_tracks.append(HandbrakeTrack(track=2))
     print(h.generate_cli(to_string=True))
