@@ -238,8 +238,8 @@ if __name__ == "__main__":
     h.video_options.encoder = "x265_10bit"
     h.video_options.q = 19
     h.source_options.chapters = "1-3"
-    h.audio_tracks.append(HandbrakeTrack(track=1, options={"encoder": "opus", "downmix": "stereo", "ab": "128"}))
-    h.audio_tracks.append(HandbrakeTrack(track=2, options={"encoder": "ac3"}))
+    h.audio_tracks.append(HandbrakeTrack(track=1, options={"aencoder": "opus", "downmix": "stereo", "ab": "128"}))
+    h.audio_tracks.append(HandbrakeTrack(track=2, options={"aencoder": "ac3"}))
     h.subtitle_tracks.append(HandbrakeTrack(track=1))
     h.subtitle_tracks.append(HandbrakeTrack(track=2))
     h.filters_options.no_comb_detect = True
