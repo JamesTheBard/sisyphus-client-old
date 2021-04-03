@@ -62,7 +62,7 @@ class Handbrake:
         self.audio_tracks = list()
 
     @property
-    def source(self):
+    def source(self) -> Path:
         """
         Return the source file as a Path
         :return: Path of the source file
@@ -78,7 +78,7 @@ class Handbrake:
         self.__source = Path(source_file)
 
     @property
-    def output_file(self):
+    def output_file(self) -> Path:
         """
         Return the output file as a Path
         :return: Path of the output file
