@@ -56,6 +56,8 @@ class Handbrake(BaseModule):
         self.process_data()
         total_frames = FfmpegInfo(source_file=self.encoder.source).video_tracks[0].frames
         command = self.encoder.generate_cli()
+        if "--json" not in command:
+            command.append('--json')
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         while True:
