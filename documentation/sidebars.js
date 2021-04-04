@@ -5,9 +5,16 @@ module.exports = {
       label: 'Sisyphus',
       items: [
         'getting-started',
-	'modules/ffmpeg',
-	'modules/mkvmerge',
       ],
     },
+    {
+      type: 'category',
+      label: 'Modules',
+      items: [
+        'modules/ffmpeg',
+        'modules/handbrake',
+ 	    'modules/mkvmerge',
+      ]
+    }
   ],
 };

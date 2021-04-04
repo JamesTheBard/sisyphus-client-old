@@ -194,3 +194,15 @@ The `output_file` field is just where the final output file will be saved to.
 
 - Looks for the `ffmpeg` binary.
 - Verifies that all of the source paths exist on the worker filesystem and are actual files.
+
+## Progress
+
+The module sends progress information to Redis under the `progress:${worker_id}` key.  The format is:
+
+```json title="Progress Format"
+{
+  "current_frame": "1240",
+  "total_frames": "34337",
+  "percent_complete": "3.61"
+}
+```

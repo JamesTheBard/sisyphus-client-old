@@ -87,7 +87,7 @@ These are global options like `no-global-tags` that apply to the entire mux.  An
 }
 ```
 
-### Full Example
+## Full Example
 
 ```json title="Full Example
 {
@@ -150,3 +150,7 @@ These are global options like `no-global-tags` that apply to the entire mux.  An
 - Verify that all sources exist.
 - Verify that tracks are defined in the job data.
 - Verify that the output file is defined in the job data.
+
+## Progress
+
+This module does not track progress.
