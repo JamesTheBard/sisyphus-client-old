@@ -36,7 +36,7 @@ The worker is fairly easy to customize, but the information structure below must
 ```json title="Example Data Structure"
 {
   "job_title": "job_title_01",
-  "job_id": "${uuid}",
+  "job_id": "1248a932-32d1-4b76-88bd-3dab8e9d3cbb",
   "tasks": [
     {
       "ffmpeg": {
@@ -51,3 +51,34 @@ The worker is fairly easy to customize, but the information structure below must
   ] 
 }
 ```
+
+## Heartbeat
+
+The current status of a worker is sent via the heartbeat message every worker sends out on a 5 second interval.  The key that each worker sends its heartbeat to is `worker:${worker_id}` and carries data in the following format:
+
+```json title="Heartbeat Format Example (Idle)"
+{
+  "status": "idle",
+  "hostname": "encode001"
+}
+```
+
+There are two other options that get populated when a job is taken by a worker: `job_id` and `job_title`.  All of the options are described below and their possible values.
+
+```json title="Heartbeat Format Example (Processing Job)"
+{
+  "status": "in_progress",
+  "hostname": "encode001",
+  "job_id": "1248a932-32d1-4b76-88bd-3dab8e9d3cbb",
+  "job_title": "awesome_job_1"
+}
+```
+
+  - `status`: This can be any of the following values:
+    - `idle`: Currently not processing a job and is polling the queue for work
+    - `startup`: The worker is starting up
+    - `in_progress`: The worker is processing a job from the queue
+  - `hostname`: The hostname of the worker
+  - `job_id`: The job ID (UUID) of the job taken from the queue
+  - `job_title`: The descriptive name of the job taken from the queue
+

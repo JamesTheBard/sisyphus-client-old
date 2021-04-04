@@ -255,3 +255,15 @@ Dirty secret: all options can be lumped into the same section.  The multitude of
 - Looks for the `HandBrakeCLI` binary.
 - Verifies that the `source` and `output_file` options are defined in the data.
 - Verifies that the source exists on the worker filesystem and is an actual file.
+
+## Progress
+
+The module sends progress information to Redis under the `progress:${worker_id}` key.  The format is:
+
+```json title="Progress Format"
+{
+  "current_frame": "1240",
+  "total_frames": "34337",
+  "percent_complete": "3.61"
+}
+```
