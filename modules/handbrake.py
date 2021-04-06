@@ -8,6 +8,7 @@ from modules.exceptions import JobValidationError, JobRunFailureError, JobModule
 from helpers.handbrake import Handbrake as Hb
 from helpers.handbrake import HandbrakeTrack
 from helpers.ffmpeg import FfmpegInfo
+from box import Box
 
 
 class Handbrake(BaseModule):
@@ -104,7 +105,7 @@ class Handbrake(BaseModule):
                 module=self.module_name
             )
         for section in self.data.values():
-            if type(section) is dict:
+            if type(section) is Box:
                 keys = set(section.keys())
                 illegal = {'i', 'input', 'o', 'output'}
                 if a.intersection(b):
