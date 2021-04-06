@@ -15,7 +15,13 @@ class Handbrake(BaseModule):
     def __init__(self, data: dict, job_title: str):
         super().__init__(data, job_title)
         self.module_name = 'handbrake'
-        self.encoder = Hb()
+        try:
+            self.encoder = Hb()
+        except TypeError:
+            raise JobRunFailureError(
+                message=f'Could not find the HandBrakeCLI binary in the system path!',
+                module=self.module_name
+            )
         self.encoder.cli_path = Path(os.getenv('HANDBRAKE_CLI_PATH', self.encoder.cli_path))
 
     def process_data(self):
