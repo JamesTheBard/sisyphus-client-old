@@ -103,6 +103,14 @@ class Handbrake(BaseModule):
                 message="No source file specified.",
                 module=self.module_name
             )
+        for section in self.data.keys():
+            keys = set(section.keys())
+            illegal = {'i', 'input', 'o', 'output'}
+            if a.intersection(b):
+                raise JobValidationError(
+                    message=f"Input and output files should be set as 'source' and 'output_file' respectively!",
+                    module=self.module_name
+                )
         if not Path(self.data.source).exists() or not Path(self.data.source).is_file():
             raise JobValidationError(
                 message=f"The source file '{Path(self.data.source).absolute()}' either does not exist "
