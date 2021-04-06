@@ -104,8 +104,9 @@ def process_queue():
                 try:
                     task_instance = module(data=data, job_title=job_title)
                 except JobModuleInitError as e:
-                    logging.critical(f"[{job_title}] Could not initialize module '{task}': {e.message}")
-                    logging.critical(f"[{job_title}] JOB FAILED: {job_title}: {job_id}")
+                    logging.critical(f" ! [{job_title}] Could not initialize module '{task}': {e.message}")
+                    logging.critical(f"JOB FAILED: {job_title}: {job_id}")
+                    job_failed = True
                     break
                 logging.info( f" + [{job_title}] Successfully loaded module: {task}")
                 logging.debug(f" + [{job_title} -> {task}] Validating data: '{data}'")
