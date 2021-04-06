@@ -103,7 +103,7 @@ class Handbrake(BaseModule):
                 message="No source file specified.",
                 module=self.module_name
             )
-        for section in self.data.keys():
+        for section in self.data.values():
             if type(section) is dict:
                 keys = set(section.keys())
                 illegal = {'i', 'input', 'o', 'output'}
