@@ -111,8 +111,8 @@ class Handbrake(BaseModule):
                 if bad_keys := keys.intersection(illegal):
                     bad_keys = sorted(list(bad_keys))
                     raise JobValidationError(
-                        message=f"Input and output files should be set as 'source' and 'output_file' respectively: "
-                                f"({', '.join(bad_keys)})",
+                        message=f"Input and output files should be set as 'source' and 'output_file', found: "
+                                f"{', '.join(bad_keys)}",
                         module=self.module_name
                     )
         if not Path(self.data.source).exists() or not Path(self.data.source).is_file():
