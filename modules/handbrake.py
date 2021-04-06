@@ -108,7 +108,7 @@ class Handbrake(BaseModule):
             if type(section) is Box:
                 keys = set(section.keys())
                 illegal = {'i', 'input', 'o', 'output'}
-                if a.intersection(b):
+                if keys.intersection(illegal):
                     raise JobValidationError(
                         message=f"Input and output files should be set as 'source' and 'output_file' respectively!",
                         module=self.module_name
