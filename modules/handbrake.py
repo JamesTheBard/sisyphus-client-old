@@ -103,3 +103,8 @@ class Handbrake(BaseModule):
                         f"or is not a file.",
                 module=self.module_name
             )
+        if "output_file" not in self.data.keys():
+            raise JobValidationError(
+                message=f"There is no output file defined in the job, abandoning job.",
+                module=self.module_name
+            )
