@@ -108,8 +108,7 @@ class Handbrake(BaseModule):
             if type(section) is Box:
                 keys = set(section.keys())
                 illegal = {'i', 'input', 'o', 'output'}
-                if bad_keys := keys.intersection(illegal):
-                    bad_keys = sorted(list(bad_keys))
+                if keys.intersection(illegal):
                     raise JobValidationError(
                         message=f"Cannot set input/output files via option sections!",
                         module=self.module_name
