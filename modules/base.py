@@ -4,6 +4,7 @@ from box import Box
 from modules.exceptions import JobConfigurationError
 
 import modules.shared
+import box
 from config import Config
 
 
@@ -16,7 +17,7 @@ class BaseModule:
     def __init__(self, job_data: dict, job_title: str):
         try:
             self.data = Box(job_data)
-        except KeyError as e:
+        except (KeyError, box.exceptions.BoxKeyError) as e:
             raise JobConfigurationError(
                 message=f"Required variable '{e.args[0]}' is not defined, exiting.",
                 module='base'
