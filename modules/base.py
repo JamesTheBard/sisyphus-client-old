@@ -1,6 +1,7 @@
 import json
 import redis
 from box import Box
+from modules.exceptions import JobConfigurationError
 
 import modules.shared
 from config import Config
@@ -13,7 +14,13 @@ class BaseModule:
     redis: redis.Redis
 
     def __init__(self, job_data: dict, job_title: str):
-        self.data = Box(job_data)
+        try:
+            self.data = Box(job_data)
+        except KeyError as e:
+            raise JobConfigurationError(
+                message=f"Required variable '{e.args[0]}' is not defined, exiting.",
+                module='base'
+            )
         self.job_title = job_title
         self.redis = redis.Redis(host=Config.REDIS_HOST, port=Config.REDIS_PORT, db=Config.REDIS_DB)
 
