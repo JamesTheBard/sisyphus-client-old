@@ -4,7 +4,7 @@ import subprocess
 import time
 from pathlib import Path
 from modules.base import BaseModule
-from modules.exceptions import JobValidationError, JobRunFailureError
+from modules.exceptions import JobValidationError, JobRunFailureError, JobModuleInitError
 from helpers.handbrake import Handbrake as Hb
 from helpers.handbrake import HandbrakeTrack
 from helpers.ffmpeg import FfmpegInfo
@@ -18,7 +18,7 @@ class Handbrake(BaseModule):
         try:
             self.encoder = Hb()
         except TypeError:
-            raise JobRunFailureError(
+            raise JobModuleInitError(
                 message=f'Could not find the HandBrakeCLI binary in the system path!',
                 module=self.module_name
             )
