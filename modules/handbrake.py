@@ -49,6 +49,11 @@ class Handbrake(BaseModule):
                 for track in self.data[f'{section}_tracks']:
                     a = getattr(self.encoder, f'{section}_tracks')
                     a.append(HandbrakeTrack(**track))
+            except TypeError:
+                raise JobValidationError(
+                    message=f'Only "track" and "option" definitions allowed in {section} track!',
+                    module=self.module_name
+                )
             except KeyError:
                 pass
 
