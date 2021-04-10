@@ -33,14 +33,7 @@ class Mkvmerge(BaseModule):
                 message=f"The font directory '{self.font_directory}' doesn't exist.",
                 module=self.module_name
             )
-        try:
-            self.font_map = generate_font_map(font_directory=self.font_directory)
-        except FontNotFoundError as e:
-            raise ex.JobRunFailureError(
-                message=f"Could not find a font for subtitle style {e.style.title}: "
-                        f"font => '{e.style.family}/{'+'.join(e.style.subfamily)}'",
-                module=self.module_name
-            )
+        self.font_map = generate_font_map(font_directory=self.font_directory)
         self.matroska = Matroska(output=self.data.output_file)
 
     def run(self):
@@ -66,7 +59,14 @@ class Mkvmerge(BaseModule):
             for s in sources:
                 if s.source_file.suffix in ['.ssa', '.ass']:
                     style_map = generate_style_map(s.source_file)
-                    temp_font_list = generate_font_list(self.font_map, style_map)
+                    try:
+                        temp_font_list = generate_font_list(self.font_map, style_map)
+                    except FontNotFoundError as e:
+                        raise ex.JobRunFailureError(
+                            message=f"Could not find a font for subtitle style {e.style.style}: "
+                                    f"font => '{e.style.family}/{'+'.join(e.style.subfamily)}'",
+                            module=self.module_name
+                        )
                     font_list.extend(temp_font_list)
             font_list = remove_duplicates(font_list)
             for font in font_list:
