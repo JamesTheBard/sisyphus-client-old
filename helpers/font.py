@@ -127,8 +127,7 @@ def generate_font_list(font_map: List[Font], style_map: List[Style]) -> List[Fon
         if len(p) == 1:
             fonts.append(p[0])
         else:
-            print(f"ERROR: Found {len(p)} fonts for a style, giving up.")
-            sys.exit(1)
+            raise FontNotFoundError(style=s)
     return remove_duplicates(fonts)
 
 
@@ -138,3 +137,14 @@ def remove_duplicates(font_map: List[Font]) -> List[Font]:
         if font.file not in [i.file for i in new_map]:
             new_map.append(font)
     return new_map
+
+
+class FontError(Exception):
+    pass
+
+
+class FontNotFoundError(FontError):
+
+    def __init__(self, style: Style, message: str = "Font file missing for a Style."):
+        self.message = message
+        self.style = style

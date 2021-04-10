@@ -2,7 +2,7 @@ from pathlib import Path
 
 from config import Config
 from helpers.mkvmerge import Matroska, MkvSource, MkvSourceTrack, MkvAttachment
-from helpers.font import generate_font_map, generate_style_map, generate_font_list, remove_duplicates
+from helpers.font import generate_font_map, generate_style_map, generate_font_list, remove_duplicates, FontNotFoundError
 from modules import exceptions as ex
 from modules.base import BaseModule
 
@@ -33,7 +33,14 @@ class Mkvmerge(BaseModule):
                 message=f"The font directory '{self.font_directory}' doesn't exist.",
                 module=self.module_name
             )
-        self.font_map = generate_font_map(font_directory=self.font_directory)
+        try:
+            self.font_map = generate_font_map(font_directory=self.font_directory)
+        except FontNotFoundError as e:
+            raise ex.JobRunFailureError(
+                message=f"Could not find a font for subtitle style {e.style.title}: "
+                        f"font => '{e.style.family}/{'+'.join(e.style.subfamily)}'",
+                module=self.module_name
+            )
         self.matroska = Matroska(output=self.data.output_file)
 
     def run(self):
