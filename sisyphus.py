@@ -18,18 +18,18 @@ def main():
     signal.signal(signal.SIGINT, graceful_exit)
     configure_logging()
     startup_message()
-    update_status_message('startup')
+    update_status_message(status='startup', task='startup')
     time.sleep(5)
     start_heartbeat()
     process_queue()
 
 
-def update_status_message(status: str, job_title: str = None, job_id: str = None):
-    message = {'status': status, 'hostname': Config.HOSTNAME}
-    if job_title:
-        message['job_title'] = job_title
-    if job_id:
-        message['job_id'] = job_id
+def update_status_message(status: str, **kwargs):
+    message = {'status': status, 'hostname': Config.HOSTNAME, 'version': Config.VERSION}
+    kwargs_filter = ["job_title", "job_id", "task"]
+    for k, v in kwargs.items():
+        if k in kwargs_filter:
+            message[k] = str(v)
     modules.shared.message = json.dumps(message)
 
 
@@ -86,11 +86,12 @@ def process_queue():
             job_id = job.job_id
             job_tasks = [list(i.keys())[0] for i in job.tasks]
             job_tasks_str = ' -> '.join(job_tasks)
-            update_status_message('in_progress', job_title, job_id)
+            update_status_message(status='in_progress', job_title=job_title, job_id=job_id, task="preparing")
             logging.info(f"ACCEPTED JOB: {job_title}: {job_id}")
             logging.info(f" + [{job_title}] Tasks in job: {job_tasks_str}")
             for task_data in job.tasks:
                 task = list(task_data.keys())[0]
+                update_status_message(status='in_progress', job_title=job_title, job_id=job_id, task=task)
                 data = task_data[task]
                 task_start_time = datetime.now()
                 module_path = f'modules.{task}'
@@ -123,7 +124,7 @@ def process_queue():
             if not been_waiting:
                 logging.info(f"Waiting for job in Redis queue '{Config.REDIS_QUEUE_NAME}'")
                 been_waiting = True
-            update_status_message('idle')
+            update_status_message(status='idle', task='idle')
 
 
 def graceful_exit(_sig, _frame):

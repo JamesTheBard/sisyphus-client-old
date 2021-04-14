@@ -11,6 +11,7 @@ class BaseModule:
     data: Box
     job_title: str
     redis: redis.Redis
+    module_name: str
 
     def __init__(self, job_data: dict, job_title: str):
         self.data = Box(job_data)
@@ -23,13 +24,12 @@ class BaseModule:
     def validate(self):
         pass
 
-    @staticmethod
-    def set_status(status: str = 'in_progress', job_title: str = None, job_id: str = None):
-        message = {'hostname': Config.HOSTNAME, 'status': status}
-        if job_title:
-            message['job_title'] = job_title
-        if job_id:
-            message['job_id'] = job_id
+    def set_status(self, status: str = 'in_progress', **kwargs):
+        message = {'status': status, 'hostname': Config.HOSTNAME, 'version': Config.VERSION, 'task': self.module_name}
+        kwargs_filter = ["job_title", "job_id", "task"]
+        for k, v in kwargs.items():
+            if k in kwargs_filter:
+                message[k] = str(v)
         modules.shared.message = json.dumps(message)
 
     def update_progress(self, info: dict, expiration: int = 10):
