@@ -20,3 +20,11 @@ class JobConfigurationError(Exception):
         self.message = message
         self.module = module
         super().__init__(self.message)
+
+
+class JobModuleInitError(Exception):
+
+    def __init__(self, message: str, module: str):
+        self.message = message
+        self.module = module
+        super().__init__(self.message)

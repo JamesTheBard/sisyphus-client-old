@@ -2,7 +2,7 @@ from pathlib import Path
 
 from config import Config
 from helpers.mkvmerge import Matroska, MkvSource, MkvSourceTrack, MkvAttachment
-from helpers.font import generate_font_map, generate_style_map, generate_font_list, remove_duplicates
+from helpers.font import generate_font_map, generate_style_map, generate_font_list, remove_duplicates, FontNotFoundError
 from modules import exceptions as ex
 from modules.base import BaseModule
 
@@ -59,7 +59,14 @@ class Mkvmerge(BaseModule):
             for s in sources:
                 if s.source_file.suffix in ['.ssa', '.ass']:
                     style_map = generate_style_map(s.source_file)
-                    temp_font_list = generate_font_list(self.font_map, style_map)
+                    try:
+                        temp_font_list = generate_font_list(self.font_map, style_map)
+                    except FontNotFoundError as e:
+                        raise ex.JobRunFailureError(
+                            message=f"Could not find a font for subtitle style {e.style.style}: "
+                                    f"font => '{e.style.family}/{'+'.join(e.style.subfamily)}'",
+                            module=self.module_name
+                        )
                     font_list.extend(temp_font_list)
             font_list = remove_duplicates(font_list)
             for font in font_list:

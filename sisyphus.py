@@ -11,7 +11,7 @@ from datetime import datetime
 import modules.shared
 from config import Config
 from helpers.heartbeat import start_heartbeat
-from modules.exceptions import JobValidationError, JobRunFailureError, JobConfigurationError
+from modules.exceptions import JobValidationError, JobRunFailureError, JobConfigurationError, JobModuleInitError
 
 
 def main():
@@ -102,9 +102,15 @@ def process_queue():
                     logging.critical(f"JOB FAILED: {job_title}: {job_id}")
                     job_failed = True
                     break
+                try:
+                    task_instance = module(data=data, job_title=job_title)
+                except JobModuleInitError as e:
+                    logging.critical(f" ! [{job_title}] Could not initialize module '{task}': {e.message}")
+                    logging.critical(f"JOB FAILED: {job_title}: {job_id}")
+                    job_failed = True
+                    break
                 logging.info( f" + [{job_title}] Successfully loaded module: {task}")
                 logging.debug(f" + [{job_title} -> {task}] Validating data: '{data}'")
-                task_instance = module(data=data, job_title=job_title)
                 try:
                     task_instance.validate()
                     logging.info(f" + [{job_title} -> {task}] Running task from module...")

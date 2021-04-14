@@ -1,8 +1,10 @@
 import json
 import redis
 from box import Box
+from modules.exceptions import JobConfigurationError
 
 import modules.shared
+import box
 from config import Config
 
 
