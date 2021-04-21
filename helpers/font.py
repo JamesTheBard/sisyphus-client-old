@@ -14,6 +14,7 @@ class Font(NamedTuple):
     family: str
     subfamily: list
     file: Path
+    ignore_subfamily: bool
 
 
 class Style(NamedTuple):
@@ -55,6 +56,7 @@ class SubtitleInfo:
 
 
 def get_info(font_file: Union[Path]) -> Font:
+    ignore_subfamily = Path(f'{str(font_file)}.all_styles').exists()
     font = ttLib.TTFont(str(font_file))
     name = str()
     family = str()
@@ -82,7 +84,8 @@ def get_info(font_file: Union[Path]) -> Font:
         name=name.decode(),
         family=family.decode(),
         subfamily=subfamily,
-        file=font_file
+        file=font_file,
+        ignore_subfamily=ignore_subfamily
     )
 
 
@@ -127,7 +130,11 @@ def generate_font_list(font_map: List[Font], style_map: List[Style]) -> List[Fon
         if len(p) == 1:
             fonts.append(p[0])
         else:
-            raise FontNotFoundError(style=s)
+            p = [i for i in font_map if i.family == s.family and i.ignore_subfamily]
+            if len(p) == 1:
+                fonts.append(p[0])
+            else:
+                raise FontNotFoundError(style=s)
     return remove_duplicates(fonts)
 
 
