@@ -9,6 +9,7 @@ RUN apt-get update && \
         ffmpeg \
         handbrake-cli \
         mkvtoolnix \
+        libmediainfo-dev \
         python3-pip && \
     pip3 install -r requirements.txt
 
