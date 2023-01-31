@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import re
 import shlex
@@ -49,7 +50,9 @@ class Ffmpeg(BaseModule):
         video_info = FfmpegInfo(Path(self.data.sources[0]))
         total_frames = video_info.video_tracks[0].frames
 
-        command = shlex.split(self.encoder.generate_command())
+        command_raw = self.encoder.generate_command()
+        logging.info(f" + [ffmpeg] Full command: {command_raw}")
+        command = shlex.split(command_raw)
         process = subprocess.Popen(
             command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
         )
