@@ -39,4 +39,4 @@ class BaseModule:
 
     def update_progress(self, info: dict):
         endpoint = urljoin(Config.API_URL, f"/worker/progress/{Config.HOST_UUID}")
-        requests.post(url=endpoint, data=json.dumps(info))
+        requests.post(url=endpoint, json=info)
