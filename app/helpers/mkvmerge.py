@@ -1,16 +1,12 @@
-import shutil
-import shlex
-import subprocess
 import json
+import shlex
+import shutil
+import subprocess
 from pathlib import Path
-from typing import List, Union
 from tempfile import NamedTemporaryFile
-from rich.progress import (
-    BarColumn,
-    TextColumn,
-    TimeRemainingColumn,
-    Progress,
-)
+from typing import List, Union
+
+from rich.progress import BarColumn, Progress, TextColumn, TimeRemainingColumn
 
 __all__ = [
     "Matroska",

@@ -14,9 +14,8 @@ def set_heartbeat():
     while True:
         try:
             requests.post(
-                Config.API_URL,
-                "/workers/status",
-                data=json.dumps(modules.shared.message),
+                urljoin(Config.API_URL, f"/worker/status/{Config.HOST_UUID}"),
+                json=modules.shared.message,
             )
         except (
             requests.exceptions.ConnectionError,

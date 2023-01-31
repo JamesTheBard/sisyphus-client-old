@@ -6,8 +6,9 @@ from pathlib import Path
 
 class Config:
     VERSION = "1.8.0"
-    API_URL = os.environ.get("SISYPHYS_SERVER", "http://127.0.0.1:5000")
+    API_URL = os.environ.get("API_URL", "http://127.0.0.1:5000")
     API_FAILURE_DELAY = 10
+    API_POLLING_DELAY = 5
 
     HOSTNAME = os.getenv("HOSTNAME_OVERRIDE", platform.node())
     HOST_UUID = str(uuid.uuid4())

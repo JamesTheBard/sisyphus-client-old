@@ -36,7 +36,7 @@ def update_status_message(status: str, **kwargs):
     for k, v in kwargs.items():
         if k in kwargs_filter:
             message[k] = str(v)
-    modules.shared.message = json.dumps(message)
+    modules.shared.message = message
 
 
 # TODO: Fix logging (make it look nice)
@@ -52,7 +52,7 @@ def configure_logging():
 
 def startup_message():
     logging.info(f"Starting worker version {Config.VERSION}")
-    logging.into(f"API Server: {Config.API_URL}")
+    logging.info(f"API Server: {Config.API_URL}")
     logging.info(f"Hostname  : {Config.HOSTNAME}")
     logging.info(f"Worker ID : {Config.HOST_UUID}")
 
@@ -64,6 +64,7 @@ def get_job() -> Box:
                 logging.info("New job found for worker!")
                 return Box(json.loads(r.text))
             if r.status_code == 404:
+                time.sleep(Config.API_POLLING_DELAY)
                 return Box()
     except requests.exceptions.ConnectionError as e:
         if modules.shared.is_connected_to_api:
@@ -83,7 +84,7 @@ def process_queue():
     logging.info("Worker online, ready to process jobs.")
     been_waiting = False
     while True:
-        time.sleep(1)
+        time.sleep(Config.API_POLLING_DELAY)
         if job := get_job():
             job_failed = False
             job_start_time = datetime.now()
@@ -158,7 +159,7 @@ def process_queue():
         else:
             if not been_waiting:
                 logging.info(
-                    f"Waiting for job in Redis queue '{Config.REDIS_QUEUE_NAME}'"
+                    f"Waiting for job from API queue '{Config.API_URL}'"
                 )
                 been_waiting = True
             update_status_message(status="idle", task="idle")
