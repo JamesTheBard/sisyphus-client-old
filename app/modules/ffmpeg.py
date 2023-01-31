@@ -51,7 +51,7 @@ class Ffmpeg(BaseModule):
         total_frames = video_info.video_tracks[0].frames
 
         command_raw = self.encoder.generate_command()
-        logging.info(f" + [ffmpeg] Full command: {command_raw}")
+        logging.info(f" + [{self.job_title} -> {self.module_name}] Full command: {command_raw}")
         command = shlex.split(command_raw)
         process = subprocess.Popen(
             command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
