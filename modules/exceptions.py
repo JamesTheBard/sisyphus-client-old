@@ -1,5 +1,4 @@
 class JobRunFailureError(Exception):
-
     def __init__(self, message: str, module: str):
         self.message = message
         self.module = module
@@ -7,7 +6,6 @@ class JobRunFailureError(Exception):
 
 
 class JobValidationError(Exception):
-
     def __init__(self, message: str, module: str):
         self.message = message
         self.module = module
@@ -15,7 +13,6 @@ class JobValidationError(Exception):
 
 
 class JobConfigurationError(Exception):
-
     def __init__(self, message: str, module: str):
         self.message = message
         self.module = module
@@ -23,7 +20,6 @@ class JobConfigurationError(Exception):
 
 
 class JobModuleInitError(Exception):
-
     def __init__(self, message: str, module: str):
         self.message = message
         self.module = module

@@ -1,21 +1,29 @@
-import redis
-import time
-import modules.shared
+import json
 import threading
+import time
+from urllib.parse import urljoin
 
+import redis
+import requests
+
+import modules.shared
 from config import Config
 
 
 def set_heartbeat():
-    r = redis.Redis(
-        host=Config.REDIS_HOST,
-        port=Config.REDIS_PORT,
-        db=Config.REDIS_DB
-    )
     while True:
         try:
-            r.set(f'worker:{Config.HOST_UUID}', modules.shared.message, ex=10)
-        except (redis.exceptions.ConnectionError, ConnectionRefusedError):
+            requests.post(
+                Config.API_URL,
+                "/workers/status",
+                data=json.dumps(modules.shared.message),
+            )
+        except (
+            requests.exceptions.ConnectionError,
+            requests.exceptions.InvalidSchema,
+            requests.exceptions.MissingSchema,
+            requests.exceptions.InvalidURL,
+        ):
             pass
         time.sleep(5)
 

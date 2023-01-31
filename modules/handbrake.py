@@ -2,20 +2,21 @@ import re
 import subprocess
 import time
 from pathlib import Path
-from modules.base import BaseModule
-from modules.exceptions import JobValidationError, JobRunFailureError
+
+from box import Box
+
+from config import Config
+from helpers.ffmpeg import FfmpegInfo
 from helpers.handbrake import Handbrake as Hb
 from helpers.handbrake import HandbrakeTrack
-from helpers.ffmpeg import FfmpegInfo
-from box import Box
-from config import Config
+from modules.base import BaseModule
+from modules.exceptions import JobRunFailureError, JobValidationError
 
 
 class Handbrake(BaseModule):
-
     def __init__(self, data: dict, job_title: str):
         super().__init__(data, job_title)
-        self.module_name = 'handbrake'
+        self.module_name = "handbrake"
         if "HANDBRAKE_CLI_PATH" in list(Config.__dict__):
             self.encoder = Hb(cli_path=getattr(Config, "HANDBRAKE_CLI_PATH"))
         else:
@@ -37,7 +38,9 @@ class Handbrake(BaseModule):
         ]
         for option in option_sections:
             try:
-                setattr(self.encoder, f'{option}_options', self.data[f'{option}_options'])
+                setattr(
+                    self.encoder, f"{option}_options", self.data[f"{option}_options"]
+                )
             except KeyError:
                 pass
 
@@ -49,24 +52,28 @@ class Handbrake(BaseModule):
         ]
         for section in track_sections:
             try:
-                for track in self.data[f'{section}_tracks']:
-                    a = getattr(self.encoder, f'{section}_tracks')
+                for track in self.data[f"{section}_tracks"]:
+                    a = getattr(self.encoder, f"{section}_tracks")
                     a.append(HandbrakeTrack(**track))
             except TypeError:
                 raise JobValidationError(
                     message=f'Only "track" and "option" definitions allowed in {section} track!',
-                    module=self.module_name
+                    module=self.module_name,
                 )
             except KeyError:
                 pass
 
     def run(self):
         self.process_data()
-        total_frames = FfmpegInfo(source_file=self.encoder.source).video_tracks[0].frames
+        total_frames = (
+            FfmpegInfo(source_file=self.encoder.source).video_tracks[0].frames
+        )
         command = self.encoder.generate_cli()
         if "--json" not in command:
-            command.append('--json')
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            command.append("--json")
+        process = subprocess.Popen(
+            command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        )
 
         while True:
             time.sleep(1)
@@ -78,14 +85,14 @@ class Handbrake(BaseModule):
                     progress = {
                         "current_frame": int(completed_perc * total_frames),
                         "total_frames": total_frames,
-                        "percent_complete": '{:0.2f}'.format(completed_perc * 100),
+                        "percent_complete": "{:0.2f}".format(completed_perc * 100),
                     }
                     self.update_progress(progress)
 
         if return_code != 0:
             raise JobRunFailureError(
                 message=f"'{self.module_name}' returned exit code {return_code}",
-                module=self.module_name
+                module=self.module_name,
             )
         return True
 
@@ -94,14 +101,13 @@ class Handbrake(BaseModule):
         if not self.encoder.cli_path.exists():
             raise JobValidationError(
                 message=f"Could not find the HandBrake CLI binary at '{self.encoder.cli_path.absolute()}'",
-                module=self.module_name
+                module=self.module_name,
             )
 
         # Verify that the source is specified in the data
-        if 'source' not in self.data.keys():
+        if "source" not in self.data.keys():
             raise JobValidationError(
-                message="No source file specified.",
-                module=self.module_name
+                message="No source file specified.", module=self.module_name
             )
 
         # Make sure that the input and output options aren't actually used.  The default style
@@ -109,24 +115,24 @@ class Handbrake(BaseModule):
         for section in self.data.values():
             if type(section) is Box:
                 keys = set(section.keys())
-                illegal = {'i', 'input', 'o', 'output'}
+                illegal = {"i", "input", "o", "output"}
                 if keys.intersection(illegal):
                     raise JobValidationError(
                         message=f"Cannot set input/output files via option sections!",
-                        module=self.module_name
+                        module=self.module_name,
                     )
 
         # Make sure that the source actually exists and is a file
         if not Path(self.data.source).exists() or not Path(self.data.source).is_file():
             raise JobValidationError(
                 message=f"The source file '{Path(self.data.source).absolute()}' either does not exist "
-                        f"or is not a file.",
-                module=self.module_name
+                f"or is not a file.",
+                module=self.module_name,
             )
 
         # Verify that there is an actual output file
         if "output_file" not in self.data.keys():
             raise JobValidationError(
                 message=f"There is no output file defined in the job, abandoning job.",
-                module=self.module_name
+                module=self.module_name,
             )

@@ -1,8 +1,9 @@
-from pymediainfo import MediaInfo, Track
+import json
 from pathlib import Path
 from typing import Union
+
 from box import Box
-import json
+from pymediainfo import MediaInfo, Track
 
 
 class JobEncoder:
@@ -44,4 +45,3 @@ class JobEncoder:
         source_file = Path(source_file)
         info = MediaInfo.parse(source_file)
         return [i for i in info.tracks if i == track][0]
-

@@ -1,22 +1,17 @@
 import re
-import shutil
 import shlex
+import shutil
 import subprocess
 import time
-from typing import List, NamedTuple, Union
 from pathlib import Path
+from typing import List, NamedTuple, Union
+
 from pymediainfo import MediaInfo
-from rich.progress import (
-    BarColumn,
-    TextColumn,
-    TimeRemainingColumn,
-    Progress,
-)
+from rich.progress import BarColumn, Progress, TextColumn, TimeRemainingColumn
 
-
-SUBTITLES = 's'
-AUDIO = 'a'
-VIDEO = 'v'
+SUBTITLES = "s"
+AUDIO = "a"
+VIDEO = "v"
 
 
 class TrackInfo(NamedTuple):
@@ -37,19 +32,21 @@ class Source:
     stream_type: str
     stream: int
 
-    def __init__(self, source: int, stream_type: str = None, stream: int = None) -> None:
+    def __init__(
+        self, source: int, stream_type: str = None, stream: int = None
+    ) -> None:
         self.source = source
         self.stream_type = stream_type
         self.stream = stream
 
     @property
     def cli_options(self):
-        o = f'{self.source}'
+        o = f"{self.source}"
         if self.stream_type is not None:
-            o += f':{self.stream_type}'
+            o += f":{self.stream_type}"
         if self.stream is not None:
-            o += f':{self.stream}'
-        return f'-map {o}'
+            o += f":{self.stream}"
+        return f"-map {o}"
 
 
 class SourceOutput:
@@ -57,7 +54,9 @@ class SourceOutput:
     stream: int
     options: dict
 
-    def __init__(self, stream_type: str = None, stream: int = None, options: dict = None):
+    def __init__(
+        self, stream_type: str = None, stream: int = None, options: dict = None
+    ):
         self.stream_type = stream_type
         self.stream = stream
         if options:
@@ -67,23 +66,23 @@ class SourceOutput:
 
     @property
     def cli_options(self):
-        command = ''
+        command = ""
         template = list()
         if self.stream_type is not None:
-            template.append(f'{self.stream_type}')
+            template.append(f"{self.stream_type}")
         if self.stream is not None:
-            template.append(f'{self.stream}')
-        template = ':'.join(template)
+            template.append(f"{self.stream}")
+        template = ":".join(template)
         for k, v in self.options.items():
             if template:
-                has_template = ':'
+                has_template = ":"
             else:
-                has_template = ''
+                has_template = ""
             if type(v) is dict:
-                i = ':'.join([f'{i}={j}' for i, j in v.items()])
-                command += f'-{k}{has_template}{template} {i} '
+                i = ":".join([f"{i}={j}" for i, j in v.items()])
+                command += f"-{k}{has_template}{template} {i} "
             else:
-                command += f'-{k}{has_template}{template} {v} '
+                command += f"-{k}{has_template}{template} {v} "
         return command.strip()
 
 
@@ -118,16 +117,16 @@ class Ffmpeg:
         self.settings = FfmpegMiscSettings()
 
     def generate_command(self) -> str:
-        command = f'{self.ffmpeg_path} '
+        command = f"{self.ffmpeg_path} "
         if self.settings.overwrite:
-            command += '-y '
-        command += '-progress pipe:1 '
+            command += "-y "
+        command += "-progress pipe:1 "
         for i in self.inputs:
             command += f'-i "{i}" '
         for source in self.mapped_sources:
-            command += f'{source.cli_options} '
+            command += f"{source.cli_options} "
         for source_output in self.mapped_outputs:
-            command += f'{source_output.cli_options} '
+            command += f"{source_output.cli_options} "
         command += f'"{self.output}"'
         return command.strip()
 
@@ -139,7 +138,9 @@ class Ffmpeg:
             frames = self.settings.video_info.frames
             progress = Progress(
                 TextColumn("[#ffff00]»[bold green] encode"),
-                BarColumn(bar_width=None, ),
+                BarColumn(
+                    bar_width=None,
+                ),
                 "[progress.percentage]{task.percentage:>3.1f}%",
                 "•",
                 "[green]{task.completed}/{task.total}[/green]",
@@ -149,11 +150,13 @@ class Ffmpeg:
             progress.start()
             task = progress.add_task("test")
             progress.update(task, total=frames)
-            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            process = subprocess.Popen(
+                command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+            )
 
-            regex = r'frame=(\s*\d+)'
+            regex = r"frame=(\s*\d+)"
             while True:
-                time.sleep(.05)
+                time.sleep(0.05)
                 output = process.stdout.readline()
                 if process.poll() is not None:
                     break
@@ -173,7 +176,6 @@ class Ffmpeg:
 
 
 class FfmpegInfo:
-
     def __init__(self, source_file: Path):
         self.source_file = source_file
         self.data = MediaInfo.parse(self.source_file)
@@ -204,22 +206,24 @@ class FfmpegInfo:
         for t in info:
             is_forced = False
             is_default = False
-            if t.forced == 'Yes':
+            if t.forced == "Yes":
                 is_forced = True
-            if t.default == 'Yes':
+            if t.default == "Yes":
                 is_default = True
-            temp.append(TrackInfo(
-                codec=t.codec_id,
-                track=count,
-                language=t.language,
-                bitrate=t.bit_rate,
-                channels=t.channel_s,
-                forced=is_forced,
-                default=is_default,
-                title=t.title,
-                frames=int(t.frame_count) if t.frame_count else None,
-                type=t.track_type,
-            ))
+            temp.append(
+                TrackInfo(
+                    codec=t.codec_id,
+                    track=count,
+                    language=t.language,
+                    bitrate=t.bit_rate,
+                    channels=t.channel_s,
+                    forced=is_forced,
+                    default=is_default,
+                    title=t.title,
+                    frames=int(t.frame_count) if t.frame_count else None,
+                    type=t.track_type,
+                )
+            )
             count += 1
         return temp
 

@@ -5,18 +5,17 @@ from modules.base import BaseModule
 
 
 class Cleanup(BaseModule):
-
     def __init__(self, data: dict, job_title: str):
         super().__init__(data, job_title)
-        self.module_name = 'cleanup'
+        self.module_name = "cleanup"
 
     def command_parser(self, command: str):
         try:
-            func = getattr(self, f'c_{command}')
+            func = getattr(self, f"c_{command}")
         except AttributeError:
             raise ex.JobConfigurationError(
                 message=f"There is no '{command}' function defined in the module.",
-                module=self.module_name
+                module=self.module_name,
             )
         return func
 
@@ -24,13 +23,12 @@ class Cleanup(BaseModule):
         for k, v in self.data.items():
             self.command_parser(k)(v)
 
-    @staticmethod
-    def c_verify_exists(data):
+    def c_verify_exists(self, data):
         for f in [Path(i) for i in data]:
             if not f.exists:
                 raise ex.JobRunFailureError(
                     message=f"Cannot verify file '{f.absolute()}' exists.",
-                    module=self.module_name
+                    module=self.module_name,
                 )
 
     @staticmethod

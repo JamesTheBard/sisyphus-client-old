@@ -1,9 +1,10 @@
-from box import Box
-from pathlib import Path
-from typing import List, Union
 import shlex
 import shutil
+from pathlib import Path
+from typing import List, Union
+
 import box
+from box import Box
 
 
 class HandbrakeTrack:
@@ -12,6 +13,7 @@ class HandbrakeTrack:
     and the options associated with each.  For available options, look under the Audio Options and Subtitles Options
     in the help of HandBrakeCLI
     """
+
     options: Box
     track: Union[int, str]
 
@@ -32,6 +34,7 @@ class Handbrake:
     """
     The core Handbrake module. This will build a correct CLI set of arguments for the HandBrakeCLI binary.
     """
+
     __source: Path
     __output_file: Path
     audio_tracks: List[HandbrakeTrack]
@@ -52,7 +55,7 @@ class Handbrake:
         if cli_path:
             self.cli_path = Path(cli_path)
         else:
-            self.cli_path = Path(shutil.which('HandBrakeCLI'))
+            self.cli_path = Path(shutil.which("HandBrakeCLI"))
         self.audio_tracks = list()
         self.destination_options = Box()
         self.encoder_options = Box()
@@ -106,11 +109,11 @@ class Handbrake:
         """
         command = list()
         for k, v in source.items():
-            key = str(k).replace('_', '-')
+            key = str(k).replace("_", "-")
             if len(k) == 1:
-                command.append(f'-{key}')
+                command.append(f"-{key}")
             else:
-                command.append(f'--{key}')
+                command.append(f"--{key}")
             if v is not None and type(v) is not bool:
                 command.append(v)
         return [str(i) for i in command]
@@ -134,7 +137,7 @@ class Handbrake:
         Generates the source options.
         :return: List of source options for the CLI
         """
-        command = ['-i', str(self.source.absolute())]
+        command = ["-i", str(self.source.absolute())]
         command.extend(self.__generate_generic_options(self.source_options))
         return command
 
@@ -143,7 +146,7 @@ class Handbrake:
         Generates the destination options.
         :return: List of source options for the CLI
         """
-        command = ['-o', str(self.output_file.absolute())]
+        command = ["-o", str(self.output_file.absolute())]
         command.extend(self.__generate_generic_options(self.destination_options))
         return command
 
@@ -168,9 +171,9 @@ class Handbrake:
         :param track_type: Type of track (either 'audio' or 'subtitles')
         :return: List of audio/subtitle options for the CLI
         """
-        unset_value = '-1'
+        unset_value = "-1"
         options_list = list()
-        tracks = getattr(self, f'{track_type}_tracks')
+        tracks = getattr(self, f"{track_type}_tracks")
         if len(tracks) == 0:
             return list()
         for t in tracks:
@@ -186,7 +189,7 @@ class Handbrake:
                     results[option].append(t.options[option])
                 except box.exceptions.BoxKeyError:
                     results[option].append(unset_value)
-        results = {k: ','.join([str(i) for i in v]) for k, v in results.items()}
+        results = {k: ",".join([str(i) for i in v]) for k, v in results.items()}
         return self.__generate_generic_options(Box(results))
 
     def generate_audio_options(self) -> List[str]:
@@ -229,16 +232,16 @@ class Handbrake:
 if __name__ == "__main__":
     """
     This is a quick example of how everything works.  If adding options that require dashes, they need to be replaced
-    with underscores.  Also, beginning dashes for options should be removed. 
-    
+    with underscores.  Also, beginning dashes for options should be removed.
+
     For example: --no-deinterlace -> "no_deinterlace"
-    
+
     Tracks don't require options, and you don't have to ensure that every track has all of the options defined for each
-    track added.  Handbrake will figure all that out on its own. 
-    
+    track added.  Handbrake will figure all that out on its own.
+
     Options that have no associated values (e.g. flags) must have a value associated with them of either None or True.
     This will tell Handbrake to drop the value from the parameter list.
-    
+
     Source file and output files need to be defined _outside_ of their option groups.  This makes it easier to
     validate.
     """
@@ -250,8 +253,14 @@ if __name__ == "__main__":
     h.destination_options.format = "av_mkv"
     h.video_options.encoder = "x265_10bit"
     h.video_options.q = 19
-    h.audio_tracks.append(HandbrakeTrack(track=1, options={"aencoder": "opus", "downmix": "stereo", "ab": "128"}))
-    h.audio_tracks.append(HandbrakeTrack(track=2, options={"aencoder": "ac3",  "drc": 1.5}))
+    h.audio_tracks.append(
+        HandbrakeTrack(
+            track=1, options={"aencoder": "opus", "downmix": "stereo", "ab": "128"}
+        )
+    )
+    h.audio_tracks.append(
+        HandbrakeTrack(track=2, options={"aencoder": "ac3", "drc": 1.5})
+    )
     h.picture_options.w = 1920
     h.picture_options.h = 1080
     h.filters_options.no_comb_detect = True

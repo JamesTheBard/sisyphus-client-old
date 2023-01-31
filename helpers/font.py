@@ -1,8 +1,8 @@
-from typing import Union
-from wcmatch.pathlib import Path
-from typing import NamedTuple, List
-from fontTools import ttLib
 import sys
+from typing import List, NamedTuple, Union
+
+from fontTools import ttLib
+from wcmatch.pathlib import Path
 
 FONT_FAMILY_SPECIFIER = 1
 FONT_SUBFAMILY_SPECIFIER = 2
@@ -33,13 +33,13 @@ class SubtitleInfo:
         self.__generate_style_map()
 
     def __generate_style_map(self) -> None:
-        with self.input_file.open('r') as f:
+        with self.input_file.open("r") as f:
             subtitles = f.readlines()
-        subtitles = [i for i in subtitles if i.startswith('Style: ')]
-        styles = [i.split(',') for i in subtitles]
+        subtitles = [i for i in subtitles if i.startswith("Style: ")]
+        styles = [i.split(",") for i in subtitles]
         for style in styles:
             subfamily = list()
-            s = style[0].split(': ')[1]
+            s = style[0].split(": ")[1]
             family = style[1]
             if int(style[7]):
                 subfamily.append("Bold")
@@ -47,45 +47,43 @@ class SubtitleInfo:
                 subfamily.append("Italic")
             if not subfamily:
                 subfamily.append("Regular")
-            style_info = Style(
-                style=s,
-                family=family,
-                subfamily=subfamily
-            )
+            style_info = Style(style=s, family=family, subfamily=subfamily)
             self.styles.append(style_info)
 
 
-def get_info(font_file: Union[Path]) -> Font:
-    ignore_subfamily = Path(f'{str(font_file)}.all_styles').exists()
+def get_info(font_file: Union[Path, str]) -> Font:
+    ignore_subfamily = Path(f"{str(font_file)}.all_styles").exists()
     font = ttLib.TTFont(str(font_file))
     name = str()
     family = str()
     subfamily = str()
-    for record in font['name'].names:
+    for record in font["name"].names:
         if record.nameID == FONT_NAME_SPECIFIER and not name:
-            if b'\000' in record.string:
-                name = str(record.string, 'utf-16-be').encode('utf-8')
+            if b"\000" in record.string:
+                name = str(record.string, "utf-16-be").encode("utf-8")
             else:
                 name = record.string
         elif record.nameID == FONT_FAMILY_SPECIFIER and not family:
-            if b'\000' in record.string:
-                family = str(record.string, 'utf-16-be').encode('utf-8')
+            if b"\000" in record.string:
+                family = str(record.string, "utf-16-be").encode("utf-8")
             else:
                 family = record.string
         elif record.nameID == FONT_SUBFAMILY_SPECIFIER and not subfamily:
-            if b'\000' in record.string:
-                subfamily = str(record.string, 'utf-16-be').encode('utf-8')
+            if b"\000" in record.string:
+                subfamily = str(record.string, "utf-16-be").encode("utf-8")
             else:
                 subfamily = record.string
         if name and family and subfamily:
             break
-    subfamily = [i if i != "Oblique" else "Italic" for i in subfamily.decode().split(' ')]
+    subfamily = [
+        i if i != "Oblique" else "Italic" for i in subfamily.decode().split(" ")
+    ]
     return Font(
         name=name.decode(),
         family=family.decode(),
         subfamily=subfamily,
         file=font_file,
-        ignore_subfamily=ignore_subfamily
+        ignore_subfamily=ignore_subfamily,
     )
 
 
@@ -93,20 +91,20 @@ def generate_font_map(font_directory: Path) -> List[Font]:
     font_directory = Path(font_directory)
     font_map = list()
     for file in font_directory.iterdir():
-        if file.suffix == '.ttf':
+        if file.suffix == ".ttf":
             font_map.append(get_info(file))
     return font_map
 
 
 def generate_style_map(subtitle_file: Path) -> List[Style]:
-    with subtitle_file.open('r') as f:
+    with subtitle_file.open("r") as f:
         subtitles = f.readlines()
-    subtitles = [i for i in subtitles if i.startswith('Style: ')]
-    styles = [i.split(',') for i in subtitles]
+    subtitles = [i for i in subtitles if i.startswith("Style: ")]
+    styles = [i.split(",") for i in subtitles]
     style_map = list()
     for style in styles:
         subfamily = list()
-        s = style[0].split(': ')[1]
+        s = style[0].split(": ")[1]
         family = style[1]
         if int(style[7]):
             subfamily.append("Bold")
@@ -114,11 +112,7 @@ def generate_style_map(subtitle_file: Path) -> List[Style]:
             subfamily.append("Italic")
         if not subfamily:
             subfamily.append("Regular")
-        style_info = Style(
-            style=s,
-            family=family,
-            subfamily=subfamily
-        )
+        style_info = Style(style=s, family=family, subfamily=subfamily)
         style_map.append(style_info)
     return style_map
 
@@ -126,7 +120,11 @@ def generate_style_map(subtitle_file: Path) -> List[Style]:
 def generate_font_list(font_map: List[Font], style_map: List[Style]) -> List[Font]:
     fonts = list()
     for s in style_map:
-        p = [i for i in font_map if i.family == s.family and not (set(i.subfamily) ^ set(s.subfamily))]
+        p = [
+            i
+            for i in font_map
+            if i.family == s.family and not (set(i.subfamily) ^ set(s.subfamily))
+        ]
         if len(p) == 1:
             fonts.append(p[0])
         else:
@@ -151,7 +149,6 @@ class FontError(Exception):
 
 
 class FontNotFoundError(FontError):
-
     def __init__(self, style: Style, message: str = "Font file missing for a Style."):
         self.message = message
         self.style = style

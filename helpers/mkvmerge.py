@@ -24,6 +24,7 @@ class MkvSourceTrack:
     """
     An object to associate tracks with MkvSources
     """
+
     options: dict
     track: int
 
@@ -56,6 +57,7 @@ class MkvSource:
     """
     A Matroska source object.
     """
+
     source_file: Path
     __tracks: List[MkvSourceTrack]
 
@@ -101,10 +103,10 @@ class MkvSource:
         for track in self.__tracks:
             for k, v in track.options.items():
                 if v is not None:
-                    command.extend([f'--{k}', f'{track.track}:{v}'])
+                    command.extend([f"--{k}", f"{track.track}:{v}"])
                 else:
-                    command.extend([f'--{k}'])
-        command.extend(('(', f'{self.source_file.absolute()}', ')'))
+                    command.extend([f"--{k}"])
+        command.extend(("(", f"{self.source_file.absolute()}", ")"))
         return command
 
 
@@ -112,6 +114,7 @@ class MkvAttachment:
     """
     A Matroska attachment object.  Very useful for adding things like fonts for subtitle sources/tracks.
     """
+
     filename: Path
     mime_type: str
     name: str
@@ -132,8 +135,14 @@ class MkvAttachment:
         Generate all options associated with the attachment.
         :return: List of attachment options passed to mkvmerge
         """
-        return ['--attachment-name', self.name, '--attachment-mime-type', self.mime_type,
-                '--attach-file', str(self.filename.absolute())]
+        return [
+            "--attachment-name",
+            self.name,
+            "--attachment-mime-type",
+            self.mime_type,
+            "--attach-file",
+            str(self.filename.absolute()),
+        ]
 
 
 class Matroska:
@@ -141,6 +150,7 @@ class Matroska:
     A class that contains all the sources, attachments, and options required to create an
     actual useful set of configuration options.  It will also mux everything together.
     """
+
     attachments: List[MkvAttachment]
     global_options: dict
     mkvmerge_path: Path
@@ -157,7 +167,7 @@ class Matroska:
         self.attachments = list()
         self.track_order_override = list()
         self.output = Path(output)
-        self.mkvmerge_path = Path(shutil.which('mkvmerge'))
+        self.mkvmerge_path = Path(shutil.which("mkvmerge"))
 
     def add_source(self, source: MkvSource) -> None:
         """
@@ -185,7 +195,7 @@ class Matroska:
         temp = list()
         for i in range(0, len(self.sources)):
             for j in self.sources[i].tracks:
-                temp.append(f'{i}:{j.track}')
+                temp.append(f"{i}:{j.track}")
         return temp
 
     def generate_options(self) -> list:
@@ -193,29 +203,34 @@ class Matroska:
         Generate a list of options to feed the 'mkvmerge' binary.
         :return: A list of 'mkvmerge' options
         """
-        full_command = ['--output', f'{self.output.absolute()}']
+        full_command = ["--output", f"{self.output.absolute()}"]
         for k, v in self.global_options.items():
             if not v:
-                full_command.append(f'--{k}')
+                full_command.append(f"--{k}")
             else:
-                full_command.extend([f'--{k}', f'{v}'])
+                full_command.extend([f"--{k}", f"{v}"])
         for source in self.sources:
             full_command.extend(source.generate_options())
         for attachment in self.attachments:
             full_command.extend(attachment.generate_options())
-        full_command.extend(['--track-order', ','.join(self.track_order)])
+        full_command.extend(["--track-order", ",".join(self.track_order)])
         return full_command
 
-    def mux(self, filename: Union[str, Path] = None, delete_temp: bool = False, verbose: bool = False) -> int:
+    def mux(
+        self,
+        filename: Union[str, Path] = None,
+        delete_temp: bool = False,
+        verbose: bool = False,
+    ) -> int:
         """
         Mux all of the included sources, attachemts, and options.
         :param filename: The filename to store the 'mkvmerge' options as JSON
         :param delete_temp: Delete the JSON file after muxing is finished
         """
         if not filename:
-            output_file = NamedTemporaryFile(mode='w', delete=False)
+            output_file = NamedTemporaryFile(mode="w", delete=False)
         else:
-            output_file = Path('output.json').open('w')
+            output_file = Path("output.json").open("w")
         command = f'"{self.mkvmerge_path}" "@{output_file.name}"'
         if verbose:
             print(command)
@@ -225,7 +240,11 @@ class Matroska:
         if verbose:
             results = subprocess.run(shlex.split(command))
         else:
-            results = subprocess.run(shlex.split(command), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            results = subprocess.run(
+                shlex.split(command),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
         if delete_temp:
             Path(output_file.name).unlink()
         return results.returncode
