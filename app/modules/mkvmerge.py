@@ -54,9 +54,15 @@ class Mkvmerge(BaseModule):
         self.matroska.global_options = self.data.options
         sources = [MkvSource(i) for i in self.data.sources]
         for track in self.data.tracks:
-            t = MkvSourceTrack(track=track.track)
-            t.options = track.options
-            sources[track.source].add_track(t)
+            try:
+                t = MkvSourceTrack(track=track.track)
+                t.options = track.options
+                sources[track.source].add_track(t)
+            except IndexError:
+                ex.JobConfigurationError(
+                    message="Could not associate tracks with non-existant sources!",
+                    module=self.module_name
+                )
         [self.matroska.add_source(i) for i in sources]
 
         if Config.MKVMERGE_ENABLE_FONT_ATTACHMENTS:

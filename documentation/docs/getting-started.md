@@ -133,3 +133,107 @@ There are two other options that get populated when a job is taken by a worker: 
   - `job_id`: The job ID (UUID) of the job taken from the queue
   - `job_title`: The descriptive name of the job taken from the queue
 
+## Full Example
+
+```json title="Full Example of Job"
+{
+  "job_title": "encode_job_name",
+  "tasks": [
+    {
+      "ffmpeg": {
+        "sources": [
+          "/mnt/phoenix/Videos/Streams/raw_test_video.mkv"
+        ],
+        "source_map": [
+          {
+            "source": 0,
+            "stream_type": "v",
+            "stream": 0
+          },
+          {
+            "source": 0,
+            "stream_type": "a",
+            "stream": 0
+          },
+          {
+            "source": 0,
+            "stream_type": "s",
+            "stream": 0
+          }
+        ],
+        "output_map": [
+          {
+            "stream_type": "v",
+            "stream": 0,
+            "profile": "dark-and-stormy"
+          },
+          {
+            "stream_type": "a",
+            "stream": 0,
+            "profile": "opus-128k"
+          },
+          {
+            "stream_type": "s",
+            "stream": 0,
+            "options": {
+              "codec": "copy"
+            }
+          }
+        ],
+        "output_file": "/mnt/phoenix/Videos/Streams/temp.mkv"
+      }
+    },
+    {
+      "mkvmerge": {
+        "sources": [
+          "/mnt/phoenix/Videos/Streams/output_file.mkv"
+        ],
+        "tracks": [
+          {
+            "source": 0,
+            "track": 0,
+            "options": {
+              "language": "und",
+              "default-track": "yes",
+              "title": "Awesome Newly Muxed Video"
+            }
+          },
+          {
+            "source": 0,
+            "track": 1,
+            "options": {
+              "language": "jpn",
+              "default-track": "yes"
+            }
+          },
+          {
+            "source": 1,
+            "track": 0,
+            "options": {
+              "language": "eng",
+              "default-track": "yes",
+              "track-title": "Full Subtitles"
+            }
+          }
+        ],
+        "output_file": "/mnt/phoenix/Videos/Streams/awesome_newly_muxed_video.mkv",
+        "options": {
+          "no-global-tags": null,
+          "no-track-tags": null,
+          "title": "Awesome Newly Muxed Video"
+        }
+      }
+    },
+    {
+      "cleanup": {
+        "verify_exists": [
+          "/mnt/phoenix/Videos/Streams/awesome_newly_muxed_video.mkv"
+        ],
+        "delete_files": [
+          "/mnt/phoenix/Videos/Streams/temp.mkv"
+        ]
+      }
+    }
+  ]
+}
+```
