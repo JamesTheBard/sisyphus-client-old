@@ -19,6 +19,7 @@ from modules.exceptions import (
     JobModuleInitError,
 )
 
+logger = logging.getLogger(__name__)
 
 def main():
     signal.signal(signal.SIGINT, graceful_exit)
@@ -115,7 +116,7 @@ def process_queue():
                     )
                 except (AttributeError, ModuleNotFoundError):
                     logging.critical(
-                        f" ! [{job_title}:{task}] TASK FAILED: Could not load module, abandoning task."
+                        f" ! [{job_title} -> {task}] TASK FAILED: Could not load module, abandoning task."
                     )
                     logging.critical(f"JOB FAILED: {job_title}: {job_id}")
                     job_failed = True

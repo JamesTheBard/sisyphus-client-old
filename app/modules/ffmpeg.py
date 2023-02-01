@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import re
 import shlex
@@ -9,12 +10,13 @@ from urllib.parse import urljoin
 
 import box
 import requests
-
 from config import Config
 from helpers.ffmpeg import Ffmpeg as Ff
 from helpers.ffmpeg import FfmpegInfo, Source, SourceOutput
 from modules import exceptions as ex
 from modules.base import BaseModule
+
+logger = logging.getLogger(__name__)
 
 
 class Ffmpeg(BaseModule):
@@ -33,6 +35,7 @@ class Ffmpeg(BaseModule):
         self.build_source_outputs()
 
     def validate(self):
+        logger.info(f" + [{self.job_title} -> {self.module_name}] Validating module configuration...")
         self.process_files()
         if not self.encoder.ffmpeg_path:
             raise ex.JobValidationError(
@@ -45,11 +48,21 @@ class Ffmpeg(BaseModule):
                     message=f"Input file '{file.name}' does not exist.", module="ffmpeg"
                 )
 
+        for i in ["source_map", "sources"]:
+            if i not in self.data.keys():
+                raise ex.JobValidationError(
+                    message=f"Failed to load job, could not find key 'source_map'.",
+                    module="ffmpeg",
+                )
+
     def run(self):
         video_info = FfmpegInfo(Path(self.data.sources[0]))
         total_frames = video_info.video_tracks[0].frames
 
         command_raw = self.encoder.generate_command()
+        logger.info(
+            f" + [{self.job_title} -> {self.module_name}] Running command: {command_raw}"
+        )
         command = shlex.split(command_raw)
         process = subprocess.Popen(
             command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
@@ -79,13 +92,19 @@ class Ffmpeg(BaseModule):
         return True
 
     def build_source_map(self):
-        for source in self.data.source_map:
-            temp = Source(
-                source=source.source,
-                stream_type=source.stream_type,
-                stream=source.stream,
+        try:
+            for source in self.data.source_map:
+                temp = Source(
+                    source=source.source,
+                    stream_type=source.stream_type,
+                    stream=source.stream,
+                )
+                self.encoder.mapped_sources.append(temp)
+        except box.BoxKeyError as e:
+            raise ex.JobConfigurationError(
+                message=f"Failed to load job, could not find key 'source_map'.",
+                module="ffmpeg",
             )
-            self.encoder.mapped_sources.append(temp)
 
     def build_source_outputs(self):
         for output in self.data.output_map:
@@ -97,11 +116,18 @@ class Ffmpeg(BaseModule):
                     "dataset": "profiles",
                     "name": output.profile,
                 }
-                encode_profile = json.loads(
-                    requests.get(
-                        urljoin(Config.API_URL, "/worker/data"), params=encode_payload
-                    ).text
-                )
+                try:
+                    encode_profile = json.loads(
+                        requests.get(
+                            urljoin(Config.API_URL, "/worker/data"),
+                            params=encode_payload,
+                        ).text
+                    )
+                except json.decoder.JSONDecodeError:
+                    raise ex.JobConfigurationError(
+                        message="Could not validate the profile JSON from the API.",
+                        module=self.module_name,
+                    )
                 encode_profile_options = encode_profile["settings"]
                 encode_options.update(encode_profile_options)
             except (
