@@ -43,7 +43,7 @@ class Mkvmerge(BaseModule):
 
     def run(self):
         self.process_data()
-        return_code = self.matroska.mux(delete_temp=False)
+        return_code = self.matroska.mux(delete_temp=True)
         if return_code > 0:
             raise ex.JobRunFailureError(
                 message=f"`mkvmerge` command returned exit code {return_code}",

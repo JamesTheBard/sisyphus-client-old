@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 import re
 import shlex
@@ -51,7 +50,6 @@ class Ffmpeg(BaseModule):
         total_frames = video_info.video_tracks[0].frames
 
         command_raw = self.encoder.generate_command()
-        logging.info(f" + [{self.job_title} -> {self.module_name}] Full command: {command_raw}")
         command = shlex.split(command_raw)
         process = subprocess.Popen(
             command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
@@ -75,7 +73,7 @@ class Ffmpeg(BaseModule):
 
         if return_code != 0:
             raise ex.JobRunFailureError(
-                message=f"`ffmpeg` command returned exit code {return_code}",
+                message=f"`ffmpeg` command returned exit code {return_code}, command: {command_raw}",
                 module="ffmpeg",
             )
         return True
