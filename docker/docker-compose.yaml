@@ -1,8 +1,8 @@
 version: "3.3"
 
 services:
-
   sisyphus-client:
+    restart: always
     build:
       context: ..
       dockerfile: docker/Dockerfile
