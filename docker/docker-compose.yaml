@@ -6,10 +6,8 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    ports:
-      - 5000:8000
     environment:
       HOSTNAME_OVERRIDE: ${HOSTNAME}
-      API_URL: "http://sisyphus.cerberus.local:5000"
+      API_URL: ${API_URL}
     volumes:
       - /mnt/phoenix:/mnt/phoenix
