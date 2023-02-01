@@ -1,0 +1,15 @@
+version: "3.3"
+
+services:
+
+  sisyphus-client:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - 5000:8000
+    environment:
+      HOSTNAME_OVERRIDE: ${HOSTNAME}
+      API_URL: "http://sisyphus.cerberus.local:5000"
+    volumes:
+      - /mnt/phoenix:/mnt/phoenix
