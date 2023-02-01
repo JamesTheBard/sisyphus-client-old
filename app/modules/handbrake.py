@@ -91,7 +91,7 @@ class Handbrake(BaseModule):
 
         if return_code != 0:
             raise JobRunFailureError(
-                message=f"'{self.module_name}' returned exit code {return_code}",
+                message=f"'{self.module_name}' returned exit code {return_code}: {command}",
                 module=self.module_name,
             )
         return True
