@@ -35,8 +35,7 @@ class BaseModule:
         for k, v in kwargs.items():
             if k in kwargs_filter:
                 message[k] = str(v)
-        modules.shared.message = json.dumps(message)
+        modules.shared.message = message
 
     def update_progress(self, info: dict):
-        endpoint = urljoin(Config.API_URL, f"/worker/progress/{Config.HOST_UUID}")
-        requests.post(url=endpoint, json=info)
+        modules.shared.message['data'] = info

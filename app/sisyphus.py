@@ -60,6 +60,17 @@ def startup_message():
 
 def get_job() -> Box:
     try:
+        if r := requests.get(urljoin(Config.API_URL, f"/disable/{Config.HOST_UUID}")):
+            if r.status_code == 404:
+                logging.info("Waiting for worker status from server...")
+                time.sleep(Config.API_POLLING_DELAY)
+                return Box()
+            if r.status_code == 200:
+                data = Box(json.loads(r.text))
+                if data.disabled:
+                    logging.info("Worker is disabled and cannot accept jobs!")
+                    time.sleep(Config.API_POLLING_DELAY)
+                    return Box()
         if r := requests.get(urljoin(Config.API_URL, "/queue/poll")):
             if r.status_code == 200:
                 logging.info("New job found for worker!")
@@ -86,84 +97,84 @@ def process_queue():
     been_waiting = False
     while True:
         time.sleep(Config.API_POLLING_DELAY)
-        if job := get_job():
-            job_failed = False
-            job_start_time = datetime.now()
-            been_waiting = False
-            job_title = job.job_title
-            job_id = job.job_id
-            job_tasks = [list(i.keys())[0] for i in job.tasks]
-            job_tasks_str = " -> ".join(job_tasks)
-            update_status_message(
-                status="in_progress",
-                job_title=job_title,
-                job_id=job_id,
-                task="preparing",
-            )
-            logging.info(f"ACCEPTED JOB: {job_title}: {job_id}")
-            logging.info(f" + [{job_title}] Tasks in job: {job_tasks_str}")
-            for task_data in job.tasks:
-                task = list(task_data.keys())[0]
-                update_status_message(
-                    status="in_progress", job_title=job_title, job_id=job_id, task=task
-                )
-                data = task_data[task]
-                task_start_time = datetime.now()
-                module_path = f"modules.{task}"
-                try:
-                    module = getattr(
-                        importlib.import_module(module_path), task.capitalize()
-                    )
-                except (AttributeError, ModuleNotFoundError):
-                    logging.critical(
-                        f" ! [{job_title} -> {task}] TASK FAILED: Could not load module, abandoning task."
-                    )
-                    logging.critical(f"JOB FAILED: {job_title}: {job_id}")
-                    job_failed = True
-                    break
-                try:
-                    task_instance = module(data=data, job_title=job_title)
-                except JobModuleInitError as e:
-                    logging.critical(
-                        f" ! [{job_title}] Could not initialize module '{task}': {e.message}"
-                    )
-                    logging.critical(f"JOB FAILED: {job_title}: {job_id}")
-                    job_failed = True
-                    break
-                logging.info(f" + [{job_title}] Successfully loaded module: {task}")
-                logging.debug(f" + [{job_title} -> {task}] Validating data: '{data}'")
-                try:
-                    task_instance.validate()
-                    logging.info(
-                        f" + [{job_title} -> {task}] Running task from module..."
-                    )
-                    task_instance.run()
-                except (
-                    JobValidationError,
-                    JobRunFailureError,
-                    JobConfigurationError,
-                ) as e:
-                    logging.critical(
-                        f" ! [{job_title} -> {task}] {type(e).__name__}: {e.message}"
-                    )
-                    logging.critical(f"JOB FAILED: {job_title}: {job_id}")
-                    job_failed = True
-                    break
-                task_run_time = datetime.now() - task_start_time
-                logging.info(
-                    f" + [{job_title} -> {task}] Completed task in '{task_run_time}'."
-                )
-            if not job_failed:
-                logging.info(f"COMPLETED JOB: {job_title}: {job_id}")
-                job_run_time = datetime.now() - job_start_time
-                logging.info(f"DURATION: {job_run_time}")
-        else:
+        if not (job := get_job()):
             if not been_waiting:
                 logging.info(
                     f"Waiting for job from API queue '{Config.API_URL}'"
                 )
                 been_waiting = True
             update_status_message(status="idle", task="idle")
+
+        job_failed = False
+        job_start_time = datetime.now()
+        been_waiting = False
+        job_title = job.job_title
+        job_id = job.job_id
+        job_tasks = [list(i.keys())[0] for i in job.tasks]
+        job_tasks_str = " -> ".join(job_tasks)
+        update_status_message(
+            status="in_progress",
+            job_title=job_title,
+            job_id=job_id,
+            task="preparing",
+        )
+        logging.info(f"ACCEPTED JOB: {job_title}: {job_id}")
+        logging.info(f" + [{job_title}] Tasks in job: {job_tasks_str}")
+        for task_data in job.tasks:
+            task = list(task_data.keys())[0]
+            update_status_message(
+                status="in_progress", job_title=job_title, job_id=job_id, task=task
+            )
+            data = task_data[task]
+            task_start_time = datetime.now()
+            module_path = f"modules.{task}"
+            try:
+                module = getattr(
+                    importlib.import_module(module_path), task.capitalize()
+                )
+            except (AttributeError, ModuleNotFoundError):
+                logging.critical(
+                    f" ! [{job_title} -> {task}] TASK FAILED: Could not load module, abandoning task."
+                )
+                logging.critical(f"JOB FAILED: {job_title}: {job_id}")
+                job_failed = True
+                break
+            try:
+                task_instance = module(data=data, job_title=job_title)
+            except JobModuleInitError as e:
+                logging.critical(
+                    f" ! [{job_title}] Could not initialize module '{task}': {e.message}"
+                )
+                logging.critical(f"JOB FAILED: {job_title}: {job_id}")
+                job_failed = True
+                break
+            logging.info(f" + [{job_title}] Successfully loaded module: {task}")
+            logging.debug(f" + [{job_title} -> {task}] Validating data: '{data}'")
+            try:
+                task_instance.validate()
+                logging.info(
+                    f" + [{job_title} -> {task}] Running task from module..."
+                )
+                task_instance.run()
+            except (
+                JobValidationError,
+                JobRunFailureError,
+                JobConfigurationError,
+            ) as e:
+                logging.critical(
+                    f" ! [{job_title} -> {task}] {type(e).__name__}: {e.message}"
+                )
+                logging.critical(f"JOB FAILED: {job_title}: {job_id}")
+                job_failed = True
+                break
+            task_run_time = datetime.now() - task_start_time
+            logging.info(
+                f" + [{job_title} -> {task}] Completed task in '{task_run_time}'."
+            )
+        if not job_failed:
+            logging.info(f"COMPLETED JOB: {job_title}: {job_id}")
+            job_run_time = datetime.now() - job_start_time
+            logging.info(f"DURATION: {job_run_time}")
 
 
 def graceful_exit(_sig, _frame):
